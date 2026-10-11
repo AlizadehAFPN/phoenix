@@ -168,3 +168,32 @@
     border-bottom: 0;
   }
 }
+
+/* Short screens and phones: the same instruments, tighter. */
+@media (max-height: 760px), (max-width: 767px) {
+  .list {
+    margin-top: var(--space-m);
+  }
+
+  .row {
+    padding-block: var(--space-xs);
+  }
+
+  .strip {
+    margin-top: var(--space-m);
+  }
+
+  .cell {
+    padding-block: var(--space-s);
+  }
+}
+
+/* A phone on its side has room for the words and nothing else: the
+   instruments step aside rather than run off the screen. */
+@media (max-height: 520px) {
+  .list,
+  .strip,
+  .foot {
+    display: none;
+  }
+}

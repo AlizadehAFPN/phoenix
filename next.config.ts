@@ -13,7 +13,6 @@ import { securityHeaders } from "./src/lib/security-headers";
  * stops the build if one appears.
  */
 const docker = process.env.BUILD_TARGET === "docker";
-const development = process.env.NODE_ENV === "development";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -29,7 +28,7 @@ const nextConfig: NextConfig = {
     return Promise.resolve([
       {
         source: "/(.*)",
-        headers: [...securityHeaders(development)],
+        headers: [...securityHeaders()],
       },
     ]);
   },

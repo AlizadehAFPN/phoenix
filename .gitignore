@@ -28,6 +28,9 @@ assets-src/
 # tooling output
 .playwright-mcp/
 coverage/
+test-results/
+playwright-report/
+blob-report/
 *.log
 
 # macOS

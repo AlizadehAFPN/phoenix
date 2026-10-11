@@ -41,7 +41,9 @@ export function DemoSection() {
       if (el === null) return;
       const trigger = ScrollTrigger.create({
         trigger: el,
-        start: "top 60%",
+        /* Exactly where the last track's beat ends: the form takes over as
+           it comes into view. */
+        start: "top bottom",
         end: "bottom bottom",
       });
       const unregister = registerBeatRange("demo", {
@@ -161,7 +163,7 @@ export function DemoSection() {
               id={`${id}-message`}
               className={styles.input}
               name="message"
-              rows={4}
+              rows={3}
               placeholder={COPY.demo.fields.messagePlaceholder}
             />
           </div>
@@ -177,11 +179,13 @@ export function DemoSection() {
           </div>
           {TURNSTILE_SITE_KEY !== null ? (
             <>
-              <div
-                className="cf-turnstile"
-                data-sitekey={TURNSTILE_SITE_KEY}
-                data-theme="auto"
-              />
+              <div className={styles.wideField}>
+                <div
+                  className="cf-turnstile"
+                  data-sitekey={TURNSTILE_SITE_KEY}
+                  data-theme="dark"
+                />
+              </div>
               <Script
                 src="https://challenges.cloudflare.com/turnstile/v0/api.js"
                 strategy="lazyOnload"

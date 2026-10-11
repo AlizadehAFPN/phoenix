@@ -1,10 +1,13 @@
+/* Its own height, not a full screen: on a laptop the form and the footer
+   together fit one screen, so the very end of the page shows all of it,
+   headline included, clear of the header. */
 .section {
   position: relative;
   z-index: var(--z-content);
-  min-height: 100svh;
-  display: grid;
-  align-items: center;
-  padding-block: calc(var(--layout-header) + var(--space-xl)) var(--space-xxl);
+  /* The halos behind the words and the form reach past their boxes; at the
+     section's edge they stop, or a right-aligned form widens the page. */
+  overflow-x: clip;
+  padding-block: calc(var(--layout-header) + var(--space-l)) var(--space-l);
 }
 
 .layout {
@@ -34,10 +37,25 @@
   );
 }
 
+/* The words sit over the globe's bright limb at the end of the page: a
+   wider, fuller halo, so the eyebrow at its top edge still reads. */
+.words::before {
+  inset: -40% -22%;
+  background: radial-gradient(
+    closest-side,
+    var(--color-grey-dark-a75) 55%,
+    transparent
+  );
+}
+
+.words p:first-child {
+  text-shadow: var(--text-shadow-stage);
+}
+
 .form {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-m);
+  gap: var(--space-sm);
 }
 
 .field {
@@ -61,7 +79,7 @@
   background: var(--color-grey-dark-a50);
   border: var(--border-width) solid var(--stage-rule);
   border-radius: var(--radius-m);
-  padding: var(--space-sm) var(--space-m);
+  padding: var(--space-s) var(--space-m);
   outline: none;
   transition:
     border-color var(--duration-handoff) var(--ease-fade),
@@ -114,8 +132,18 @@
 }
 
 @media (min-width: 768px) {
+  /* Six columns: name and email share the first row, airline, role and
+     fleet size the second, the message and the actions span. */
   .form {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .field {
+    grid-column: span 2;
+  }
+
+  .field:nth-child(-n + 2) {
+    grid-column: span 3;
   }
 
   .wideField {
@@ -127,6 +155,7 @@
   .layout {
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
     column-gap: var(--space-xxl);
+    align-items: center;
   }
 
   .form {

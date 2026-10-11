@@ -165,13 +165,43 @@ function ktxCreate(input, output, { alpha, rdo }) {
   }
 }
 
-/** Composes RGB + mask into a flipped RGBA PNG for `ktx create`. */
+/**
+ * Composes RGB + mask into a flipped RGBA PNG for `ktx create`.
+ *
+ * NEVER RESIZE THE RESULT. libvips premultiplies by alpha before it resamples
+ * and divides it back out after, and where alpha is 0 — every ocean texel,
+ * since the alpha is the LAND mask — that division leaves the colour black.
+ * Each size is composed from its own RGB and its own mask instead, and the
+ * water is checked before the file is written.
+ */
 async function composeDay(rgb, mask, width, height, file) {
+  assertWaterIsNotBlack(rgb, mask, file);
   await sharp(rgb, { raw: { width, height, channels: 3 } })
     .joinChannel(mask, { raw: { width, height, channels: 1 } })
     .flip()
     .png({ compressionLevel: 6 })
     .toFile(file);
+}
+
+/**
+ * The ocean's mean colour must look like an ocean. Blue Marble's open water
+ * averages around 60–90 per channel; a run that blacks it out averages 0.
+ * A threshold of 20 catches the failure without being sensitive to imagery.
+ */
+function assertWaterIsNotBlack(rgb, mask, label) {
+  let n = 0;
+  let sum = 0;
+  for (let i = 0; i < mask.length; i += 11) {
+    if (mask[i] !== 0) continue;
+    n += 1;
+    sum += rgb[i * 3] + rgb[i * 3 + 1] + rgb[i * 3 + 2];
+  }
+  const mean = n === 0 ? 0 : sum / (n * 3);
+  if (n > 0 && mean < 20) {
+    throw new Error(
+      `${label}: ocean texels average ${mean.toFixed(1)} — the water has been blacked out`,
+    );
+  }
 }
 
 /* ------------------------------------------------------------------ run */
@@ -227,10 +257,22 @@ async function main() {
         ? nightBasePng
         : resolve(work, `earth-night-${String(width)}.png`);
     if (width !== world.width) {
-      await sharp(dayBasePng, { limitInputPixels: false })
-        .resize(width, width / 2, { kernel: "lanczos3", fit: "fill" })
-        .png({ compressionLevel: 6 })
-        .toFile(dayPng);
+      /* The RGB is resized on its own (no alpha, nothing premultiplied) and
+         the land mask is rasterised again at this size: see composeDay. */
+      const size = { width, height: width / 2 };
+      const rgb = await sharp(dayBase, {
+        raw: { width: world.width, height: world.height, channels: 3 },
+      })
+        .resize(size.width, size.height, { kernel: "lanczos3", fit: "fill" })
+        .raw()
+        .toBuffer();
+      const mask = await landMask(
+        world,
+        { left: 0, top: 0, ...world },
+        size.width,
+        size.height,
+      );
+      await composeDay(rgb, mask.data, size.width, size.height, dayPng);
       await sharp(nightBasePng, { limitInputPixels: false })
         .resize(width, width / 2, { kernel: "lanczos3", fit: "fill" })
         .png({ compressionLevel: 6 })
@@ -274,13 +316,24 @@ async function main() {
     detailFullPng,
   );
   const detailHalfPng = resolve(work, "detail-day-half.png");
-  await sharp(detailFullPng, { limitInputPixels: false })
-    .resize(Math.round(dayBox.width / 2), Math.round(dayBox.height / 2), {
-      kernel: "lanczos3",
-      fit: "fill",
-    })
-    .png({ compressionLevel: 6 })
-    .toFile(detailHalfPng);
+  const half = {
+    width: Math.round(dayBox.width / 2),
+    height: Math.round(dayBox.height / 2),
+  };
+  const halfRgb = await sharp(dayDetail, {
+    raw: { width: dayBox.width, height: dayBox.height, channels: 3 },
+  })
+    .resize(half.width, half.height, { kernel: "lanczos3", fit: "fill" })
+    .raw()
+    .toBuffer();
+  const halfMask = await landMask(DAY_SOURCE, dayBox, half.width, half.height);
+  await composeDay(
+    halfRgb,
+    halfMask.data,
+    half.width,
+    half.height,
+    detailHalfPng,
+  );
 
   const nightBox = regionBox(NIGHT_SOURCE);
   /* UASTC wants multiples of four; the night tile is resampled to the
@@ -353,7 +406,7 @@ async function main() {
       night: "/textures/detail-night.ktx2",
       size: {
         day: [dayBox.width, dayBox.height],
-        night: [nightBox.width, nightBox.height],
+        night: [nightSize.width, nightSize.height],
       },
     },
   };

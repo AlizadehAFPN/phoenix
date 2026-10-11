@@ -29,7 +29,7 @@
 
 const TURNSTILE = "https://challenges.cloudflare.com";
 
-export function contentSecurityPolicy(development: boolean): string {
+export function contentSecurityPolicy(): string {
   const scriptSrc = [
     "'self'",
     "'unsafe-inline'",
@@ -51,18 +51,17 @@ export function contentSecurityPolicy(development: boolean): string {
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'",
-    ...(development ? [] : ["upgrade-insecure-requests"]),
+    /* No `upgrade-insecure-requests`: every URL on the page is relative,
+       so on HTTPS there is nothing to upgrade, and HSTS below already keeps
+       the browser on HTTPS. Over plain-HTTP localhost it made WebKit rewrite
+       the scripts' URLs to https:// and fail, so a local production run was
+       a black page in Safari. */
   ].join("; ");
 }
 
-export function securityHeaders(
-  development: boolean,
-): readonly { key: string; value: string }[] {
+export function securityHeaders(): readonly { key: string; value: string }[] {
   return [
-    {
-      key: "Content-Security-Policy",
-      value: contentSecurityPolicy(development),
-    },
+    { key: "Content-Security-Policy", value: contentSecurityPolicy() },
     { key: "X-Content-Type-Options", value: "nosniff" },
     { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
     {

@@ -8,3 +8,5 @@ docs/planning/
 package-lock.json
 src/theme/tokens.generated.css
 src/theme/tokens.generated.ts
+src/data/textures.generated.json
+test-results/

@@ -262,7 +262,10 @@ export const BEATS: readonly Beat[] = [
   },
   {
     id: "regulatory",
-    lengthVh: 70,
+    /* The last track: its beat runs while its bottom travels from the top
+       of the screen to the bottom (see BeatTrack), so 100vh of it is the
+       approach of the demo section and 70vh is the beat itself. */
+    lengthVh: 170,
     segments: [{ until: 1, clock: ["12:30", "12:30"], kind: "hold" }],
     view: {
       eye: { lat: 36, lon: 30, alt: 1.4 },

@@ -3,16 +3,30 @@
   inset: 0 0 auto 0;
   z-index: var(--z-chrome);
   height: var(--layout-header);
-  /* The app's scroll-edge effect: the page blurs softly as it passes under
-     the header, fading to nothing at the header's lower edge. */
-  -webkit-backdrop-filter: blur(var(--blur-scroll-edge));
-  backdrop-filter: blur(var(--blur-scroll-edge));
-  -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent);
-  mask-image: linear-gradient(to bottom, black 55%, transparent);
   pointer-events: none;
 }
 
+/* The app's scroll-edge effect, on a layer of its own: the page darkens
+   and blurs softly as it passes under the header, fading to nothing below
+   it. On the header itself the mask would fade the clock as well. */
+.header::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 calc(-1 * var(--space-l)) 0;
+  background: linear-gradient(
+    to bottom,
+    var(--color-grey-dark-a75),
+    var(--color-grey-dark-a25) 70%,
+    transparent
+  );
+  -webkit-backdrop-filter: blur(var(--blur-scroll-edge));
+  backdrop-filter: blur(var(--blur-scroll-edge));
+  -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent);
+  mask-image: linear-gradient(to bottom, black 60%, transparent);
+}
+
 .inner {
+  position: relative;
   height: 100%;
   max-width: var(--layout-max);
   margin-inline: auto;

@@ -95,6 +95,13 @@ describe("the score", () => {
     }
   });
 
+  it("gives the last track more than a screen, since its beat ends when the demo comes into view", () => {
+    const tracks = BEATS.filter((b) => b.lengthVh > 0);
+    const last = tracks[tracks.length - 1];
+    expect(last?.id).toBe("regulatory");
+    expect(last?.lengthVh ?? 0).toBeGreaterThan(100 + 40);
+  });
+
   it("clamps progress", () => {
     expect(scoreAt("hero", -1).progress).toBe(0);
     expect(scoreAt("hero", 2).progress).toBe(1);
