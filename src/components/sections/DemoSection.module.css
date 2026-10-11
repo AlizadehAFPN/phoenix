@@ -1,21 +1,43 @@
-.demo {
+.section {
+  position: relative;
+  z-index: var(--z-content);
+  min-height: 100svh;
+  display: grid;
+  align-items: center;
+  padding-block: calc(var(--layout-header) + var(--space-xl)) var(--space-xxl);
+}
+
+.layout {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-xl);
   align-items: start;
 }
 
+.words,
+.form {
+  position: relative;
+}
+
+/* The same soft halo the stage gives its words, so the form reads over the
+   planet without a card. */
+.words::before,
+.form::before {
+  content: "";
+  position: absolute;
+  inset: -14% -12%;
+  z-index: -1;
+  background: radial-gradient(
+    closest-side,
+    var(--color-grey-dark-a75),
+    transparent
+  );
+}
+
 .form {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-m);
-  padding: var(--space-l);
-  background: var(--card-glass);
-  -webkit-backdrop-filter: blur(var(--card-blur));
-  backdrop-filter: blur(var(--card-blur));
-  border: var(--panel-edge);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-glass-panel);
 }
 
 .field {
@@ -26,7 +48,7 @@
 .label {
   font-size: var(--text-xs-size);
   font-weight: var(--text-xs-bold-weight);
-  color: var(--color-text-secondary);
+  color: var(--stage-secondary);
 }
 
 .input {
@@ -35,12 +57,11 @@
   font-size: var(--text-base-size);
   font-weight: var(--font-weight-regular);
   line-height: var(--leading-body);
-  color: var(--color-text-primary);
-  background: var(--color-surface-placeholder);
-  border: var(--border-width) solid var(--color-border-textbox);
+  color: var(--stage-text);
+  background: var(--color-grey-dark-a50);
+  border: var(--border-width) solid var(--stage-rule);
   border-radius: var(--radius-m);
   padding: var(--space-sm) var(--space-m);
-  box-shadow: var(--shadow-input-focus-glow);
   outline: none;
   transition:
     border-color var(--duration-handoff) var(--ease-fade),
@@ -48,7 +69,7 @@
 }
 
 .input::placeholder {
-  color: var(--color-text-unit);
+  color: var(--stage-faint);
 }
 
 .input:focus-visible {
@@ -63,7 +84,7 @@
 .error {
   font-size: var(--text-xxs-size);
   font-weight: var(--text-xxs-bold-weight);
-  color: var(--color-error-400);
+  color: var(--color-error-300);
 }
 
 .honeypot {
@@ -76,39 +97,16 @@
 
 .actions {
   display: grid;
+  justify-items: start;
   gap: var(--space-sm);
   margin-top: var(--space-s);
-}
-
-.submit {
-  justify-self: start;
-  font-size: var(--text-base-size);
-  font-weight: var(--text-base-weight);
-  line-height: 1;
-  color: var(--color-grey-white);
-  background: var(--color-primary-400);
-  border: 0;
-  border-radius: var(--radius-m);
-  padding: var(--space-m) var(--space-l);
-  box-shadow: var(--inner-highlight-chat);
-  cursor: pointer;
-  transition: background var(--duration-handoff) var(--ease-fade);
-}
-
-.submit:hover {
-  background: var(--color-primary-300);
-}
-
-.submit:disabled {
-  opacity: var(--opacity-disabled);
-  cursor: default;
 }
 
 .privacy,
 .status {
   font-size: var(--text-xs-size);
   font-weight: var(--text-xs-weight);
-  color: var(--color-text-secondary);
+  color: var(--stage-muted);
 }
 
 .status:empty {
@@ -118,19 +116,22 @@
 @media (min-width: 768px) {
   .form {
     grid-template-columns: 1fr 1fr;
-    padding: var(--space-xl);
   }
 
-  .field:nth-last-child(n + 1):has(textarea),
-  .actions,
-  .status {
+  .wideField {
     grid-column: 1 / -1;
   }
 }
 
 @media (min-width: 1024px) {
-  .demo {
+  .layout {
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
     column-gap: var(--space-xxl);
+  }
+
+  .form {
+    max-width: calc(var(--text-base-size) * 40);
+    justify-self: end;
+    width: 100%;
   }
 }

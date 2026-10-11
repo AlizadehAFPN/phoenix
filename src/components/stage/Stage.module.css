@@ -1,0 +1,152 @@
+/*
+ * The stage: words over the planet, no boxes. Text is always light — the
+ * scene is space in both modes — so the stage reads its colours from the
+ * neutral ramp directly rather than from the mode-aware text tokens.
+ */
+
+.stage {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-content);
+  pointer-events: none;
+  transition: opacity var(--duration-handoff) var(--ease-fade);
+}
+
+.stage[data-off="true"] {
+  opacity: 0;
+}
+
+.block {
+  position: absolute;
+  left: var(--layout-gutter);
+  right: var(--layout-gutter);
+  top: 50%;
+  max-width: calc(var(--text-base-size) * 34);
+  transform: translateY(calc(-50% + (1 - var(--t, 0)) * var(--rise)));
+  opacity: 0;
+  visibility: hidden;
+  will-change: opacity, transform;
+}
+
+.block[data-active="true"] {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.wide {
+  max-width: none;
+}
+
+/* A soft halo behind the words, so they read over city lights and clouds
+   without a box. The darkest surface at half strength, feathered out. */
+.inner {
+  position: relative;
+}
+
+.inner::before {
+  content: "";
+  position: absolute;
+  inset: -20% -24%;
+  z-index: -1;
+  background: radial-gradient(
+    closest-side,
+    var(--color-grey-dark-a75),
+    transparent
+  );
+}
+
+/* A wide block spans the stage; its scrim is a band rather than a halo. */
+.wide .inner::before {
+  inset: -30% -8%;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--color-grey-dark-a75) 30%,
+    var(--color-grey-dark-a75) 70%,
+    transparent
+  );
+}
+
+.eyebrow {
+  font-size: var(--text-xs-size);
+  font-weight: var(--text-xs-bold-weight);
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: var(--color-primary-300);
+  margin-bottom: var(--space-m);
+}
+
+.headline {
+  font-size: var(--text-headline-size);
+  font-weight: var(--font-weight-light);
+  line-height: var(--leading-tight);
+  letter-spacing: 0;
+  text-wrap: balance;
+  color: var(--stage-text);
+}
+
+.hero .headline {
+  font-size: var(--text-hero-size);
+  font-weight: var(--font-weight-thin);
+}
+
+.lead {
+  margin-top: var(--space-m);
+  font-size: var(--text-lead-size);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--leading-body);
+  color: var(--stage-secondary);
+  text-wrap: pretty;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-m);
+  margin-top: var(--space-l);
+}
+
+.cta {
+  font-size: var(--text-base-size);
+  font-weight: var(--text-base-weight);
+  line-height: 1;
+  color: var(--color-grey-white);
+  background: var(--color-primary-400);
+  border-radius: var(--radius-m);
+  padding: var(--space-m) var(--space-l);
+  text-decoration: none;
+  box-shadow: var(--inner-highlight-chat);
+  transition: background var(--duration-handoff) var(--ease-fade);
+}
+
+.cta:hover {
+  background: var(--color-primary-300);
+}
+
+.quiet {
+  font-size: var(--text-sm-size);
+  font-weight: var(--text-sm-weight);
+  color: var(--stage-muted);
+  text-decoration: none;
+  transition: color var(--duration-handoff) var(--ease-fade);
+}
+
+.quiet:hover {
+  color: var(--stage-text);
+}
+
+/* Phones: the words sit in the lower half, the planet's point of interest
+   above them (the camera anchors to the upper third in portrait). */
+@media (max-width: 767px), (orientation: portrait) {
+  .block {
+    top: auto;
+    bottom: calc(var(--space-xl) + env(safe-area-inset-bottom));
+    max-width: none;
+    transform: translateY(calc((1 - var(--t, 0)) * var(--rise)));
+  }
+
+  .inner::before {
+    inset: -12% -10%;
+  }
+}

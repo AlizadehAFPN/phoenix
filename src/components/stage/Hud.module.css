@@ -1,0 +1,167 @@
+/*
+ * The instruments: thin, tabular readouts under a beat's words — the
+ * roster's legs, the documents, the sector steps, the OOOI times, the sync
+ * queue. No cards, no icons; rules and type, the way a flight deck reads.
+ */
+
+.list {
+  margin-top: var(--space-l);
+  display: grid;
+  border-top: var(--border-width) solid var(--stage-rule);
+}
+
+.row {
+  --fill: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: baseline;
+  column-gap: var(--space-sm);
+  padding-block: var(--space-s);
+  border-bottom: var(--border-width) solid var(--stage-rule);
+  font-size: var(--text-sm-size);
+  font-weight: var(--text-sm-weight);
+  color: var(--stage-muted);
+  transition:
+    color var(--duration-handoff) var(--ease-fade),
+    opacity var(--duration-wordmark) var(--ease-fade),
+    transform var(--duration-wordmark) var(--ease-wordmark);
+}
+
+/* A row that has not happened yet is faint; one that is live is the accent;
+   one that is done is the full text colour. */
+.row[data-state="pending"],
+.row[data-state="locked"] {
+  color: var(--stage-faint);
+}
+
+.row[data-state="current"] {
+  color: var(--color-primary-300);
+}
+
+.row[data-state="done"] {
+  color: var(--stage-text);
+}
+
+/* A row that arrives: hidden until its moment, then one fade and one rise. */
+.row[data-arrive="false"] {
+  opacity: 0;
+  transform: translateY(var(--rise));
+}
+
+.row[data-arrive="true"] {
+  opacity: 1;
+  transform: none;
+}
+
+.index {
+  font-size: var(--text-xxs-size);
+  font-weight: var(--text-xxs-bold-weight);
+  color: var(--stage-faint);
+  min-width: 1.5em;
+}
+
+.label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.value {
+  color: var(--stage-text);
+  white-space: nowrap;
+}
+
+.row[data-state="pending"] .value,
+.row[data-state="locked"] .value {
+  color: var(--stage-faint);
+}
+
+.row[data-state="current"] .value {
+  color: var(--color-primary-300);
+}
+
+.unit {
+  color: var(--stage-muted);
+  margin-left: var(--space-xxs);
+}
+
+/* The hold-to-confirm ring, filling clockwise, as the app draws it. */
+.ring {
+  display: inline-block;
+  width: var(--space-m);
+  height: var(--space-m);
+  border-radius: 50%;
+  vertical-align: middle;
+  background: conic-gradient(
+    var(--color-primary-400) calc(var(--fill) * 360deg),
+    var(--stage-rule) 0
+  );
+  -webkit-mask: radial-gradient(circle, transparent 55%, black 56%);
+  mask: radial-gradient(circle, transparent 55%, black 56%);
+}
+
+.row[data-state="done"] .ring {
+  background: var(--color-primary-400);
+}
+
+.foot {
+  margin-top: var(--space-s);
+  font-size: var(--text-xs-size);
+  font-weight: var(--text-xs-weight);
+  color: var(--stage-muted);
+}
+
+/* A status word on a row: queued → sent, locked. */
+.status {
+  font-size: var(--text-xxs-size);
+  font-weight: var(--text-xxs-bold-weight);
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.row[data-state="done"] .status {
+  color: var(--color-success-300);
+}
+
+/* The wipe: rows are clipped away from the left as the device clears. */
+.wipeable {
+  clip-path: inset(0 0 0 calc(var(--wipe, 0) * 100%));
+}
+
+/* The proof strip: five readouts in a row on wide screens. */
+.strip {
+  display: grid;
+  grid-template-columns: 1fr;
+  margin-top: var(--space-l);
+  border-top: var(--border-width) solid var(--stage-rule);
+}
+
+.cell {
+  padding-block: var(--space-m);
+  border-bottom: var(--border-width) solid var(--stage-rule);
+}
+
+.cellTitle {
+  font-size: var(--text-base-size);
+  font-weight: var(--text-base-weight);
+  color: var(--stage-text);
+}
+
+.cellBody {
+  margin-top: var(--space-xs);
+  font-size: var(--text-xs-size);
+  font-weight: var(--text-xs-weight);
+  color: var(--stage-muted);
+  max-width: calc(var(--text-base-size) * 18);
+}
+
+@media (min-width: 1024px) {
+  .strip {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    column-gap: var(--space-l);
+  }
+
+  .cell {
+    border-bottom: 0;
+  }
+}

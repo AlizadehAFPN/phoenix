@@ -1,10 +1,16 @@
 /**
- * The page's score: the beats, how long each pins, what the clock does inside
- * each, and where the camera is (STORYBOARD §4).
+ * The page's score: the beats, how much scroll each one takes, what the
+ * clock does inside each, and where the camera is (STORYBOARD §4).
  *
  * PURE DATA, no imports from the scene or the DOM, so it can be unit-tested
  * and so the DOM, the clock, the duty bar and the 3D scene all read one
  * description of the page rather than four that drift apart.
+ *
+ * NOTHING PINS. The document is a scroll track of one section per beat,
+ * `lengthVh` tall, and everything the reader sees — the scene, the words,
+ * the instruments — is drawn on a fixed stage from the scroll position.
+ * Every tick of the wheel moves something, which is what keeps the page
+ * from ever feeling stuck.
  *
  * A beat is split into SEGMENTS. Each segment ends at a fraction of the
  * beat's scroll and carries the clock at its start and end, so the clock can
@@ -37,7 +43,7 @@ export type OooiEvent = "offBlock" | "takeOff" | "landing" | "onBlocks";
 export type SegmentKind =
   /** The clock bridges from the previous beat; nothing else happens. */
   | "intro"
-  /** The clock holds; the beat's own content plays on the DOM. */
+  /** The clock holds; the beat's own content plays on the stage. */
   | "hold"
   /** The clock holds while a hold-to-confirm ring fills around the head. */
   | "ring"
@@ -47,7 +53,7 @@ export type SegmentKind =
   | "steps"
   /** Queued marks fill in, oldest to newest. */
   | "replay"
-  /** Every panel wipes to clean glass. */
+  /** The instruments wipe clean for the next crew member. */
   | "wipe";
 
 export interface Segment {
@@ -79,9 +85,8 @@ export interface CameraView {
   readonly look: Anchor;
   /**
    * Where the look point lands on the screen, as fractions of the viewport
-   * width and height. The copy card sits top-left and the screen panel
-   * bottom-right (STORYBOARD §5), so the globe's point of interest is placed
-   * in the free upper-right quadrant; phones override this.
+   * width and height. The words sit on the left (STORYBOARD §5), so the
+   * globe's point of interest goes right of centre; phones override this.
    */
   readonly anchor: readonly [number, number];
 }
@@ -89,34 +94,47 @@ export interface CameraView {
 export interface Beat {
   readonly id: BeatId;
   /**
-   * How long the beat pins on desktop, in viewport heights, beyond its own
-   * height. 0 means the section scrolls through without pinning. Phones
-   * never pin (STORYBOARD §5).
+   * The beat's share of the scroll track, in viewport heights. 0 for the
+   * demo, which is an ordinary section after the track.
    */
-  readonly pinVh: number;
+  readonly lengthVh: number;
   readonly segments: readonly Segment[];
+  /** The camera at the beat's start. */
   readonly view: CameraView;
+  /**
+   * The camera at the beat's end, when the beat itself travels (the hero's
+   * pull-back). Otherwise the view holds for the whole beat.
+   */
+  readonly viewEnd?: CameraView;
 }
 
 /* Route geography the views are framed around: Istanbul, Cairo, Amman. */
 const ORBIT_CENTRE: GeoPoint = { lat: 35, lon: 32 };
+const RIGHT: readonly [number, number] = [0.68, 0.46];
+const WIDE: readonly [number, number] = [0.62, 0.5];
 
 export const BEATS: readonly Beat[] = [
   {
     id: "hero",
-    pinVh: 0,
+    lengthVh: 120,
     segments: [{ until: 1, clock: ["02:10", "02:10"], kind: "hold" }],
-    /* Low over the Balkans, looking east-southeast at the dawn line, which at
-       02:10Z lies about 26° east of Istanbul. */
+    /* Low over the Balkans in the dark, looking east-southeast at the dawn
+       line, which at 02:10Z lies about 26° east of Istanbul; the scroll
+       pulls the camera back and up toward orbit. */
     view: {
-      eye: { lat: 42, lon: 17, alt: 0.3 },
-      look: { lat: 37, lon: 48, alt: 0 },
-      anchor: [0.72, 0.42],
+      eye: { lat: 42.5, lon: 19, alt: 0.16 },
+      look: { lat: 38.5, lon: 40, alt: 0 },
+      anchor: RIGHT,
+    },
+    viewEnd: {
+      eye: { lat: 40, lon: 23, alt: 0.7 },
+      look: { lat: 36.5, lon: 36, alt: 0 },
+      anchor: RIGHT,
     },
   },
   {
     id: "roster",
-    pinVh: 200,
+    lengthVh: 130,
     segments: [
       { until: 0.15, clock: ["02:10", "02:40"], kind: "intro" },
       { until: 1, clock: ["02:40", "02:40"], kind: "hold" },
@@ -124,12 +142,12 @@ export const BEATS: readonly Beat[] = [
     view: {
       eye: { ...ORBIT_CENTRE, alt: 1.7 },
       look: { ...ORBIT_CENTRE, alt: 0 },
-      anchor: [0.62, 0.5],
+      anchor: [0.66, 0.5],
     },
   },
   {
     id: "folder",
-    pinVh: 200,
+    lengthVh: 100,
     segments: [
       { until: 0.15, clock: ["02:40", "03:05"], kind: "intro" },
       { until: 1, clock: ["03:05", "03:05"], kind: "hold" },
@@ -137,12 +155,12 @@ export const BEATS: readonly Beat[] = [
     view: {
       eye: { lat: 41.6, lon: 27.4, alt: 0.4 },
       look: { lat: 41.26, lon: 28.73, alt: 0 },
-      anchor: [0.74, 0.3],
+      anchor: RIGHT,
     },
   },
   {
     id: "sector",
-    pinVh: 300,
+    lengthVh: 140,
     segments: [
       { until: 0.12, clock: ["03:05", "03:25"], kind: "intro" },
       { until: 1, clock: ["03:25", "03:25"], kind: "steps" },
@@ -150,12 +168,12 @@ export const BEATS: readonly Beat[] = [
     view: {
       eye: { lat: 39, lon: 27, alt: 0.75 },
       look: { lat: 35.5, lon: 30, alt: 0 },
-      anchor: [0.74, 0.3],
+      anchor: RIGHT,
     },
   },
   {
     id: "oooi",
-    pinVh: 320,
+    lengthVh: 220,
     segments: [
       { until: 0.05, clock: ["03:25", "03:40"], kind: "intro" },
       {
@@ -186,12 +204,12 @@ export const BEATS: readonly Beat[] = [
     view: {
       eye: { head: true, dLat: 7, dLon: -6, alt: 0.5 },
       look: { head: true, dLat: 0, dLon: 0, alt: 0.02 },
-      anchor: [0.72, 0.3],
+      anchor: [0.66, 0.44],
     },
   },
   {
     id: "journey",
-    pinVh: 200,
+    lengthVh: 100,
     segments: [
       { until: 0.15, clock: ["05:58", "06:15"], kind: "intro" },
       { until: 1, clock: ["06:15", "06:15"], kind: "hold" },
@@ -199,12 +217,12 @@ export const BEATS: readonly Beat[] = [
     view: {
       eye: { lat: 30.9, lon: 30.3, alt: 0.35 },
       look: { lat: 30.12, lon: 31.4, alt: 0 },
-      anchor: [0.74, 0.3],
+      anchor: RIGHT,
     },
   },
   {
     id: "signal",
-    pinVh: 260,
+    lengthVh: 170,
     segments: [
       { until: 0.08, clock: ["06:15", "06:55"], kind: "intro" },
       { until: 0.14, clock: ["06:55", "07:10"], kind: "flight" },
@@ -216,12 +234,12 @@ export const BEATS: readonly Beat[] = [
     view: {
       eye: { head: true, dLat: -5, dLon: -7, alt: 0.45 },
       look: { head: true, dLat: 0, dLon: 0, alt: 0.02 },
-      anchor: [0.72, 0.3],
+      anchor: [0.66, 0.44],
     },
   },
   {
     id: "handover",
-    pinVh: 220,
+    lengthVh: 120,
     segments: [
       { until: 0.45, clock: ["08:32", "11:58"], kind: "flight" },
       { until: 1, clock: ["11:58", "12:30"], kind: "wipe" },
@@ -229,37 +247,37 @@ export const BEATS: readonly Beat[] = [
     view: {
       eye: { lat: 36, lon: 30, alt: 1.4 },
       look: { lat: 35.5, lon: 31.5, alt: 0 },
-      anchor: [0.6, 0.42],
+      anchor: WIDE,
     },
   },
   {
     id: "proof",
-    pinVh: 0,
+    lengthVh: 90,
     segments: [{ until: 1, clock: ["12:30", "12:30"], kind: "hold" }],
     view: {
       eye: { lat: 36, lon: 30, alt: 1.4 },
       look: { lat: 35.5, lon: 31.5, alt: 0 },
-      anchor: [0.6, 0.42],
+      anchor: WIDE,
     },
   },
   {
     id: "regulatory",
-    pinVh: 0,
+    lengthVh: 70,
     segments: [{ until: 1, clock: ["12:30", "12:30"], kind: "hold" }],
     view: {
       eye: { lat: 36, lon: 30, alt: 1.4 },
       look: { lat: 35.5, lon: 31.5, alt: 0 },
-      anchor: [0.6, 0.42],
+      anchor: WIDE,
     },
   },
   {
     id: "demo",
-    pinVh: 0,
+    lengthVh: 0,
     segments: [{ until: 1, clock: ["12:30", "12:30"], kind: "hold" }],
     view: {
       eye: { lat: 24, lon: 36, alt: 2.4 },
       look: { lat: 18, lon: 36, alt: 0 },
-      anchor: [0.32, 0.55],
+      anchor: [0.3, 0.5],
     },
   },
 ];
@@ -273,3 +291,6 @@ export function beat(id: BeatId): Beat {
 export function beatIndex(id: BeatId): number {
   return BEATS.findIndex((b) => b.id === id);
 }
+
+/** The beats that live on the scroll track, in order. */
+export const TRACK_BEATS: readonly Beat[] = BEATS.filter((b) => b.lengthVh > 0);

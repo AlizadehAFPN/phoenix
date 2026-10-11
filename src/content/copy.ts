@@ -42,26 +42,23 @@ export const COPY = {
     eyebrow: "Flight roster",
     headline: "The day, as ops planned it.",
     lead: "Every leg, ground time and crew member for the duty, in UTC. Duty time is shown against the live limit, and an FDP extension can be requested from the roster itself.",
-    panel: "Flight roster",
-    panelAlt: `The ${product} flight roster on iPad: the day's legs with departure and arrival times in UTC, ground times, the crew, and the duty time against its limit.`,
-    fdpPanel: "FDP extension request",
-    fdpAlt: `The FDP extension request sheet in ${product}.`,
+    report: "Report",
+    fdp: "FDP",
+    limit: "Limit",
   },
 
   folder: {
     eyebrow: "Flight folder",
     headline: "Documents on the iPad before the signal goes.",
     lead: "Each leg's documents are cached on the device and open offline.",
-    panel: "Flight folder",
-    panelAlt: `The ${product} flight folder on iPad: the leg's documents, each marked as available on the device.`,
-    viewerPanel: "Offline document viewer",
-    viewerAlt: `A cached document open in ${product} with no network connection.`,
-    pages: [
+    documents: [
       "Operational flight plan",
       "Weather briefing",
       "NOTAM briefing",
       "Load sheet",
     ],
+    cached: "On device",
+    offline: "No signal — opens offline",
   },
 
   sector: {
@@ -76,8 +73,9 @@ export const COPY = {
       "Arrival",
       "Summary",
     ],
-    locked: "Locked until the previous step is complete",
-    panelAlt: (step: string) => `The ${step} step of a sector in ${product}.`,
+    locked: "Locked",
+    current: "Open",
+    done: "Done",
   },
 
   oooi: {
@@ -91,49 +89,50 @@ export const COPY = {
       onBlocks: "On-blocks",
     },
     hold: "Hold to confirm",
-    fuel: "Fuel",
     fuelUnit: "kg",
-    submit: "Post-flight submission",
-    submitAlt: `The post-flight submission that closes a flight in ${product}.`,
-    panelAlt: (event: string) =>
-      `Recording the ${event.toLowerCase()} time and fuel reading in ${product}, with the hold-to-confirm control.`,
+    submitted: "Post-flight submission sent",
   },
 
   journey: {
     eyebrow: "Digital journey log",
     headline: "Signed at the aircraft.",
     lead: "The journey log is signed with a photo signature and an on-device face check, then locked under its number.",
-    panel: "Journey log",
-    panelAlt: `A completed journey log in ${product}, signed and locked under its number.`,
-    signaturePanel: "Photo signature",
-    signatureAlt: `The photo signature step in ${product}, before the picture is taken.`,
+    signature: "Photo signature",
+    faceCheck: "Face check on device",
+    log: "Journey log",
     locked: "Locked",
-    number: "Journey log",
+    open: "Open",
   },
 
   signal: {
     eyebrow: "No signal",
     headline: "Works with no signal.",
     lead: "Times, fuel, sector steps, sign-off and FDP requests are recorded on the device and replayed in the order performed once coverage returns. A Sync Status card shows what is still queued. Defect reports and ECTM readings send directly.",
-    queuedPanel: "Sync status — queued",
-    queuedAlt: `The Sync Status card in ${product} listing the actions still queued on the device.`,
-    sentPanel: "Sync status — sent",
-    sentAlt: `The Sync Status card in ${product} after the queued actions have been delivered.`,
-    queued: "Queued on the device",
-    sent: "Delivered, in order",
+    syncStatus: "Sync status",
+    queue: [
+      "Take-off time",
+      "Fuel reading",
+      "Sector step: Arrival",
+      "Sign-off",
+      "FDP request",
+    ],
+    queued: "Queued",
+    sent: "Sent",
   },
 
   handover: {
     eyebrow: "Shared iPad",
     headline: "One iPad, every crew member.",
     lead: "Sign-out wipes one crew member's records, documents and notifications before the next pilot uses the device.",
-    panel: "Sign-out",
-    panelAlt: `The sign-out confirmation in ${product}, held to confirm.`,
-    next: "Ready for the next crew member",
+    items: ["Records", "Documents", "Notifications"],
+    signingOut: "Signing out",
+    cleared: "Cleared",
+    ready: "Ready for the next crew member",
   },
 
   proof: {
     eyebrow: "Built on",
+    headline: "What it is built on.",
     items: [
       {
         title: "UTC throughout",
@@ -156,7 +155,6 @@ export const COPY = {
         body: "Opens from the persisted read cache with no network.",
       },
     ],
-    modesAlt: `The same ${product} screen in light mode and in dark mode.`,
   },
 
   regulatory: {

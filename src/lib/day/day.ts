@@ -22,6 +22,16 @@ export interface Leg {
   readonly takeOff: string;
   readonly landing: string;
   readonly onBlocks: string;
+  /**
+   * The fuel reading captured with each time, in kilograms. Design data for
+   * the readout: plausible narrow-body figures, not a measurement.
+   */
+  readonly fuelKg: {
+    readonly offBlock: number;
+    readonly takeOff: number;
+    readonly landing: number;
+    readonly onBlocks: number;
+  };
 }
 
 export interface Day {
@@ -58,6 +68,7 @@ export const GENERIC_DAY: Day = {
       takeOff: "03:55",
       landing: "05:50",
       onBlocks: "05:58",
+      fuelKg: { offBlock: 8900, takeOff: 8650, landing: 4150, onBlocks: 4000 },
     },
     {
       from: "CAI",
@@ -66,6 +77,7 @@ export const GENERIC_DAY: Day = {
       takeOff: "07:10",
       landing: "08:25",
       onBlocks: "08:32",
+      fuelKg: { offBlock: 6800, takeOff: 6600, landing: 4100, onBlocks: 4000 },
     },
     {
       from: "AMM",
@@ -74,6 +86,7 @@ export const GENERIC_DAY: Day = {
       takeOff: "09:45",
       landing: "11:50",
       onBlocks: "11:58",
+      fuelKg: { offBlock: 8700, takeOff: 8450, landing: 3900, onBlocks: 3750 },
     },
   ],
 };
@@ -150,6 +163,16 @@ export function validateDay(day: Day): void {
     }
     if (leg.from === leg.to) {
       throw new Error(`day: leg ${String(index + 1)} goes nowhere`);
+    }
+    const f = leg.fuelKg;
+    if (!(
+      f.offBlock >= f.takeOff &&
+      f.takeOff > f.landing &&
+      f.landing >= f.onBlocks
+    )) {
+      throw new Error(
+        `day: leg ${String(index + 1)} fuel does not fall through the leg`,
+      );
     }
     previousEnd = t.onBlocks;
     previousTo = leg.to;

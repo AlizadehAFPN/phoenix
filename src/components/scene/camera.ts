@@ -2,11 +2,13 @@
  * Where the camera is, for a point in the score (STORYBOARD §4: each beat's
  * view, and the head-tracking views of the two flight beats).
  *
- * A beat's view is two anchors, eye and look, in geographic terms. Between
- * beats the camera travels from the previous beat's final pose to the new
- * one across the first quarter of the beat, on the app's `climb` curve, and
- * it travels on the SPHERE — direction by spherical interpolation, radius by
- * linear — so a long move never cuts through the globe or skims it.
+ * A beat's view is two anchors, eye and look, in geographic terms, plus a
+ * screen anchor. A beat with a `viewEnd` travels between its two views over
+ * its own length (the hero's pull-back). Between beats the camera travels
+ * from the previous beat's final pose to the new one across the first
+ * quarter of the beat, on the app's `climb` curve. It travels on the
+ * SPHERE — direction by spherical interpolation, radius by linear — so a
+ * long move never cuts through the globe or skims it.
  */
 
 import { airport, type Day } from "@/lib/day/day";
@@ -16,6 +18,7 @@ import { ease } from "@/lib/motion/easing";
 import {
   BEATS,
   type Anchor,
+  type Beat,
   type BeatId,
   type CameraView,
 } from "@/lib/timeline/beats";
@@ -28,7 +31,7 @@ export interface Pose {
   readonly anchor: readonly [number, number];
 }
 
-/** The share of a beat over which the camera moves from the previous view. */
+/** The share of a beat over which the camera arrives from the previous view. */
 const TRAVEL_SHARE = 0.25;
 
 function resolveAnchor(anchor: Anchor, day: Day, clock: number): Vec3 {
@@ -78,6 +81,28 @@ function travel(a: Vec3, b: Vec3, t: number): Vec3 {
   return scale(direction, ra + (rb - ra) * t);
 }
 
+function blend(a: Pose, b: Pose, t: number): Pose {
+  return {
+    eye: travel(a.eye, b.eye, t),
+    look: travel(a.look, b.look, t),
+    anchor: [
+      a.anchor[0] + (b.anchor[0] - a.anchor[0]) * t,
+      a.anchor[1] + (b.anchor[1] - a.anchor[1]) * t,
+    ],
+  };
+}
+
+/** A beat's own pose at `progress`, travelling to `viewEnd` when it has one. */
+function ownPose(b: Beat, progress: number, clock: number, day: Day): Pose {
+  const start = viewPose(b.view, day, clock);
+  if (b.viewEnd === undefined) return start;
+  return blend(
+    start,
+    viewPose(b.viewEnd, day, clock),
+    ease("drift", Math.min(1, Math.max(0, progress))),
+  );
+}
+
 /** The camera pose for `progress` through beat `id`, at `clock`. */
 export function poseAt(
   id: BeatId,
@@ -88,21 +113,13 @@ export function poseAt(
   const index = BEATS.findIndex((b) => b.id === id);
   const current = BEATS[index];
   if (current === undefined) throw new Error(`unknown beat "${id}"`);
-  const target = viewPose(current.view, day, clock);
+  const target = ownPose(current, progress, clock, day);
 
   const previous = BEATS[index - 1];
   if (previous === undefined || progress >= TRAVEL_SHARE) return target;
 
-  const from = viewPose(previous.view, day, clockAtEnd(previous.id));
-  const t = ease("climb", progress / TRAVEL_SHARE);
-  return {
-    eye: travel(from.eye, target.eye, t),
-    look: travel(from.look, target.look, t),
-    anchor: [
-      from.anchor[0] + (target.anchor[0] - from.anchor[0]) * t,
-      from.anchor[1] + (target.anchor[1] - from.anchor[1]) * t,
-    ],
-  };
+  const from = ownPose(previous, 1, clockAtEnd(previous.id), day);
+  return blend(from, target, ease("climb", progress / TRAVEL_SHARE));
 }
 
 /** The first airport's position, for a scene that has not read the scroll yet. */

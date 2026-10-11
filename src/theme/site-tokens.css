@@ -84,6 +84,16 @@
   --card-glass: var(--color-glass-glassier);
   --card-blur: var(--blur-background);
 
+  /* ---- stage ----------------------------------------------------------- */
+
+  /* Words over the planet are always light: the scene is space in both
+     modes, so the stage reads the neutral ramp directly. */
+  --stage-text: var(--color-grey-white);
+  --stage-secondary: var(--color-grey-white-a75);
+  --stage-muted: var(--color-grey-white-a50);
+  --stage-faint: var(--color-grey-white-a25);
+  --stage-rule: var(--color-grey-white-a10);
+
   /* ---- layers ---------------------------------------------------------- */
 
   --z-scene: 0;

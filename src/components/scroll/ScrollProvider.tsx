@@ -63,7 +63,7 @@ export function ScrollProvider({ children }: { readonly children: ReactNode }) {
       autoRaf: false,
       smoothWheel: true,
       syncTouch: false,
-      lerp: 0.1,
+      lerp: 0.12,
     });
 
     lenis.on("scroll", ScrollTrigger.update);

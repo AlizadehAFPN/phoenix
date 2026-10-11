@@ -1,0 +1,5 @@
+.track {
+  position: relative;
+  width: 100%;
+  pointer-events: none;
+}

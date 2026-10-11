@@ -1,10 +1,11 @@
 "use client";
 
+import { useGSAP } from "@gsap/react";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Script from "next/script";
-import { useId, useState, type FormEvent } from "react";
+import { useId, useRef, useState, type FormEvent } from "react";
 
-import { Beat } from "@/components/scroll/Beat";
-import { CopyCard } from "@/components/ui/CopyCard";
+import { Words } from "@/components/stage/Words";
 import { COPY } from "@/content/copy";
 import {
   LEAD_FIELDS,
@@ -12,22 +13,48 @@ import {
   type LeadErrors,
   type LeadField,
 } from "@/lib/lead/validate";
+import { registerBeatRange } from "@/lib/scroll/beat-registry";
 
-import styles from "./DemoBeat.module.css";
+import stage from "../stage/Stage.module.css";
+import styles from "./DemoSection.module.css";
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? null;
 
 type Status = "idle" | "sending" | "sent" | "failed" | "invalid";
 
 /**
- * Beat 10: the request-a-demo form (BRIEF A6). Six fields, a honeypot nobody
- * sees, Turnstile when a site key is configured, and one POST to the Route
- * Handler. Inputs are the base type size, so Safari never zooms them.
+ * Beat 10: the request-a-demo form (BRIEF A6), an ordinary section after the
+ * scroll track so it can be as tall as it needs to be on a phone. Six
+ * fields, a honeypot nobody sees, Turnstile when a site key is configured,
+ * and one POST to the Route Handler. Inputs are the base type size, so
+ * Safari never zooms them.
  */
-export function DemoBeat() {
+export function DemoSection() {
   const id = useId();
+  const section = useRef<HTMLElement>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [errors, setErrors] = useState<LeadErrors>({});
+
+  useGSAP(
+    () => {
+      const el = section.current;
+      if (el === null) return;
+      const trigger = ScrollTrigger.create({
+        trigger: el,
+        start: "top 60%",
+        end: "bottom bottom",
+      });
+      const unregister = registerBeatRange("demo", {
+        start: () => trigger.start,
+        end: () => trigger.end,
+      });
+      return () => {
+        unregister();
+        trigger.kill();
+      };
+    },
+    { scope: section },
+  );
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -104,20 +131,29 @@ export function DemoBeat() {
   };
 
   return (
-    <Beat id="demo">
-      <div className={`container ${styles.demo}`}>
-        <CopyCard
-          eyebrow={COPY.demo.eyebrow}
-          headline={COPY.demo.headline}
-          lead={COPY.demo.lead}
-        />
+    <section
+      ref={section}
+      id="demo"
+      data-beat="demo"
+      className={styles.section}
+      aria-labelledby="demo-headline"
+    >
+      <div className={`container ${styles.layout}`}>
+        <div className={styles.words}>
+          <Words
+            id="demo"
+            eyebrow={COPY.demo.eyebrow}
+            headline={COPY.demo.headline}
+            lead={COPY.demo.lead}
+          />
+        </div>
         <form className={styles.form} onSubmit={submit} noValidate>
           {field("name", "text", "name")}
           {field("email", "email", "email")}
           {field("airline", "text", "organization")}
           {field("role", "text", "organization-title")}
           {field("fleetSize")}
-          <div className={styles.field}>
+          <div className={`${styles.field} ${styles.wideField}`}>
             <label className={styles.label} htmlFor={`${id}-message`}>
               {COPY.demo.fields.message}
             </label>
@@ -152,9 +188,9 @@ export function DemoBeat() {
               />
             </>
           ) : null}
-          <div className={styles.actions}>
+          <div className={`${styles.actions} ${styles.wideField}`}>
             <button
-              className={styles.submit}
+              className={stage.cta}
               type="submit"
               disabled={status === "sending"}
             >
@@ -162,15 +198,18 @@ export function DemoBeat() {
             </button>
             <p className={styles.privacy}>{COPY.demo.privacy}</p>
           </div>
-          <p className={styles.status} role="status" aria-live="polite">
+          <p
+            className={`${styles.status} ${styles.wideField}`}
+            role="status"
+            aria-live="polite"
+          >
             {status === "sent" ? COPY.demo.sent : null}
             {status === "failed" ? COPY.demo.failed : null}
             {status === "invalid" ? COPY.demo.invalid : null}
           </p>
-          {/* Keep the field list and the validation's in one place. */}
           <input type="hidden" name="fields" value={LEAD_FIELDS.join(",")} />
         </form>
       </div>
-    </Beat>
+    </section>
   );
 }

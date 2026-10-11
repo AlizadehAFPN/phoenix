@@ -100,7 +100,7 @@ export function CameraRig({ motion }: { readonly motion: boolean }) {
        the point of interest goes to the upper middle instead. */
     if (camera instanceof PerspectiveCamera) {
       const portrait = size.height > size.width;
-      const [ax, ay] = portrait ? [0.5, 0.84] : pose.anchor;
+      const [ax, ay] = portrait ? [0.5, 0.3] : pose.anchor;
       const dpr = state.viewport.dpr;
       const w = size.width * dpr;
       const h = size.height * dpr;

@@ -42,7 +42,16 @@ import { RING_FRAGMENT, RING_VERTEX } from "./shaders/globe";
 const SAMPLES = 160;
 const LINE_WIDTH = 1.6;
 const QUEUED_WIDTH = 1.0;
+/* Marker sizes as angles seen from the camera, in radians, so they keep one
+   size on screen whether the camera is in orbit or skimming the surface. */
+const HEAD_ANGLE = 0.03;
+const RING_ANGLE = 0.02;
+const SIGNAL_ANGLE = 0.018;
+const DOT_ANGLE = 0.0035;
+/* The geometry's own radius, which the per-frame scale is measured against. */
+const RING_RADIUS = 0.012;
 const SIGNAL_RING = 0.016;
+const DOT_RADIUS = 0.003;
 
 /** The glow at the head, from the app's own disc glow profile (profiles.ts). */
 const DISC_GLOW_STOPS: readonly (readonly [number, number])[] = [
@@ -283,9 +292,12 @@ export function Route({ day }: { readonly day: Day }) {
       );
       head.current.visible = beatIndex >= BEAT_IDS.indexOf("sector");
     }
-    if (headGlow.current !== null) {
-      const s = 0.014 + flight.altitude * 0.25;
+    if (head.current !== null && headGlow.current !== null) {
+      /* A constant size on screen: the glow is an angle, not a length. */
+      const d = state.camera.position.distanceTo(head.current.position);
+      const s = d * HEAD_ANGLE;
       headGlow.current.scale.set(s, s, 1);
+      head.current.children[1]?.scale.set(s * 0.3, s * 0.3, 1);
     }
 
     /* The hold-to-confirm ring, around the head while a ring segment fills. */
@@ -296,6 +308,8 @@ export function Route({ day }: { readonly day: Day }) {
         ru.uOpacity.value = score.ring === null ? 0 : 1;
       ring.current.visible = score.ring !== null;
       orientOnSurface(ring.current, flight.position, flight.altitude + 0.002);
+      const d = state.camera.position.distanceTo(ring.current.position);
+      ring.current.scale.setScalar((d * RING_ANGLE) / RING_RADIUS);
     }
 
     /* The sector's stations: lit in order through the stepper, then all lit. */
@@ -471,15 +485,27 @@ function AirportMarker({
   const dot = useRef<Mesh>(null);
   const halo = useRef<Mesh>(null);
 
-  useFrame(() => {
-    if (dot.current !== null) orientOnSurface(dot.current, position, 0.0015);
-    if (halo.current !== null) orientOnSurface(halo.current, position, 0.001);
+  useFrame((state) => {
+    const { beat } = readScroll();
+    const shown = beat !== "hero" && beat !== "demo";
+    if (dot.current !== null) {
+      orientOnSurface(dot.current, position, 0.0015);
+      const d = state.camera.position.distanceTo(dot.current.position);
+      dot.current.scale.setScalar((d * DOT_ANGLE) / DOT_RADIUS);
+      dot.current.visible = shown;
+    }
+    if (halo.current !== null) {
+      orientOnSurface(halo.current, position, 0.001);
+      const d = state.camera.position.distanceTo(halo.current.position);
+      halo.current.scale.setScalar((d * SIGNAL_ANGLE) / SIGNAL_RING);
+      halo.current.visible = shown;
+    }
   });
 
   return (
     <group>
       <mesh ref={dot} renderOrder={2}>
-        <circleGeometry args={[0.003, 24]} />
+        <circleGeometry args={[DOT_RADIUS, 24]} />
         <meshBasicMaterial color={color} depthWrite={false} />
       </mesh>
       {/* The ring of signal: where the device has coverage (STORYBOARD beats 02 and 06). */}
