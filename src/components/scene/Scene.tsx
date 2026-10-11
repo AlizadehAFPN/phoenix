@@ -18,6 +18,7 @@ import { THEME } from "@/theme";
 import { CameraRig } from "./CameraRig";
 import { Globe } from "./Globe";
 import { Route } from "./Route";
+import { Sanitize } from "./Sanitize";
 import { Stars } from "./Stars";
 
 /**
@@ -73,6 +74,7 @@ export function Scene({
       <Route day={THEME.day} />
       {post && tier !== "c" ? (
         <EffectComposer multisampling={0} enableNormalPass={false}>
+          <Sanitize />
           <Bloom
             luminanceThreshold={1}
             luminanceSmoothing={0.35}

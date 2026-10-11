@@ -77,7 +77,10 @@ export const GLOBE_FRAGMENT = /* glsl */ `
 
     /* Sunlight, with a soft terminator and a warm band across it. */
     float daylight = smoothstep(-0.10, 0.30, NdotL);
-    float twilight = exp(-pow(NdotL / 0.14, 2.0));
+    /* Squared by multiplication: pow() with a negative base is undefined in
+       GLSL and is NaN on some drivers. */
+    float twilightX = NdotL / 0.14;
+    float twilight = exp(-twilightX * twilightX);
     vec3 warm = mix(vec3(1.0), TWILIGHT / TWILIGHT.r, twilight * 0.85);
     /* By day the surface stays at or below 1.0, so it never blooms; the
        night side keeps a trace of earthshine so the continents are there. */
@@ -85,7 +88,9 @@ export const GLOBE_FRAGMENT = /* glsl */ `
 
     /* The sun on the water. */
     float water = 1.0 - land;
-    vec3 H = normalize(L + V);
+    vec3 halfSum = L + V;
+    float halfLen = max(length(halfSum), 1e-4);
+    vec3 H = halfSum / halfLen;
     float highlight = pow(max(dot(N, H), 0.0), 120.0) * water * daylight;
     color += highlight * vec3(1.0, 0.95, 0.85) * 1.1;
 
@@ -120,7 +125,7 @@ export const GLOBE_FRAGMENT = /* glsl */ `
     color += SKY * fresnel * (0.55 * daylight + 0.15 * twilight);
     color += TWILIGHT * fresnel * twilight * 0.6;
 
-    gl_FragColor = vec4(color, 1.0);
+    gl_FragColor = vec4(clamp(color, 0.0, 16.0), 1.0);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
   }
@@ -165,10 +170,11 @@ export const ATMOSPHERE_FRAGMENT = /* glsl */ `
     float rim = pow(1.0 - clamp(abs(dot(N, V)), 0.0, 1.0), uRimPower);
     float facing = dot(N, L);
     float lit = smoothstep(-0.30, 0.35, facing);
-    float twilight = exp(-pow(facing / 0.20, 2.0));
+    float twilightX = facing / 0.20;
+    float twilight = exp(-twilightX * twilightX);
     vec3 color = SKY * lit * 0.9 + TWILIGHT * twilight * 0.9;
     float intensity = rim * (0.9 * lit + 0.7 * twilight) * uIntensity;
-    gl_FragColor = vec4(color * intensity, 1.0);
+    gl_FragColor = vec4(clamp(color * intensity, 0.0, 16.0), 1.0);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
   }
@@ -199,12 +205,16 @@ export const RING_FRAGMENT = /* glsl */ `
   void main() {
     float r = length(vLocal);
     float band = smoothstep(uInner - 0.0008, uInner, r) * (1.0 - smoothstep(uOuter, uOuter + 0.0008, r));
-    float angle = atan(vLocal.x, vLocal.y);
+    /* atan(0, 0) is undefined; the centre is outside the band anyway, so it
+       is nudged off zero rather than evaluated there. */
+    vec2 dir = r < 1e-5 ? vec2(0.0, 1.0) : vLocal / r;
+    float angle = atan(dir.x, dir.y);
     float turn = (angle < 0.0 ? angle + 6.2831853 : angle) / 6.2831853;
     float filled = step(turn, uFill);
     float track = 0.22;
     float a = band * mix(track, 1.0, filled) * uOpacity;
-    if (a < 0.002) discard;
+    /* Written so that a NaN is discarded too: a < 0.002 is false for NaN. */
+    if (!(a >= 0.002)) discard;
     gl_FragColor = vec4(uColor, a);
     #include <colorspace_fragment>
   }
