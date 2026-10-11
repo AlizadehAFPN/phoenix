@@ -42,6 +42,15 @@ export const PUBLIC_ALLOW_LIST = [
 ];
 
 /**
+ * Prefixes the platform itself puts into the build environment: Vercel's
+ * system variables (`NEXT_PUBLIC_VERCEL_URL`, `..._GIT_COMMIT_SHA`,
+ * `..._TARGET_ENV`, ...). Deployment URLs and git metadata, public by the
+ * platform's own definition. Their VALUES are still checked against the
+ * credential shapes below, so a secret smuggled under the prefix is refused.
+ */
+export const PUBLIC_ALLOW_PREFIXES = ["NEXT_PUBLIC_VERCEL_"];
+
+/**
  * Server-only secrets. Read in `server-only` modules, entered by the owner as
  * Vercel Sensitive variables, and in local development kept in `.env.local`,
  * which is gitignored. Listed here so the post-build scan knows which values
@@ -143,8 +152,11 @@ export function classify(key, value) {
   if (value === "") return null;
 
   const isPublic = key.startsWith("NEXT_PUBLIC_");
+  const allowed =
+    PUBLIC_ALLOW_LIST.includes(key) ||
+    PUBLIC_ALLOW_PREFIXES.some((prefix) => key.startsWith(prefix));
 
-  if (isPublic && !PUBLIC_ALLOW_LIST.includes(key)) {
+  if (isPublic && !allowed) {
     return "a NEXT_PUBLIC_ key that is not on the allow-list";
   }
 
@@ -224,6 +236,9 @@ export function describeFindings(findings) {
     "",
     "Only public identifiers may carry the prefix:",
     ...PUBLIC_ALLOW_LIST.map((key) => `  ${key}`),
+    ...PUBLIC_ALLOW_PREFIXES.map(
+      (prefix) => `  ${prefix}* (platform system variables)`,
+    ),
     "",
     "Keep server secrets under their plain names, read them only in a",
     "`server-only` module, and enter them in Vercel as Sensitive variables.",
