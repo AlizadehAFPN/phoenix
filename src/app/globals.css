@@ -1,6 +1,5 @@
 @import "../theme/tokens.generated.css";
 @import "../theme/site-tokens.css";
-@import "lenis/dist/lenis.css";
 
 /*
  * Base styles. Every value is a token (BRIEF §2.6); the two token files above
