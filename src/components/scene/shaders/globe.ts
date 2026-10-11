@@ -53,7 +53,7 @@ export const GLOBE_FRAGMENT = /* glsl */ `
 
   /* Rayleigh sky and twilight, see the module comment. */
   const vec3 SKY = vec3(0.30, 0.55, 1.0);
-  const vec3 TWILIGHT = vec3(1.0, 0.45, 0.15);
+  const vec3 TWILIGHT = vec3(1.0, 0.42, 0.12);
 
   /* Value noise on the sphere for the clouds: cheap, tileable by construction
      because it is sampled by position rather than by UV. */
@@ -109,14 +109,16 @@ export const GLOBE_FRAGMENT = /* glsl */ `
     /* Sunlight, with a soft terminator and a warm band across it. */
     float daylight = smoothstep(-0.10, 0.30, NdotL);
     float twilight = exp(-pow(NdotL / 0.14, 2.0));
-    vec3 warm = mix(vec3(1.0), TWILIGHT / TWILIGHT.r, twilight * 0.75);
-    vec3 color = albedo * (daylight * 1.15 * warm + 0.015);
+    vec3 warm = mix(vec3(1.0), TWILIGHT / TWILIGHT.r, twilight * 0.85);
+    /* By day the surface stays at or below 1.0, so it never blooms; the
+       night side keeps a trace of earthshine so the continents are there. */
+    vec3 color = albedo * (daylight * 1.5 * warm + 0.03) + SKY * 0.012 * (1.0 - daylight);
 
     /* The sun on the water. */
     float water = 1.0 - land;
     vec3 H = normalize(L + V);
     float highlight = pow(max(dot(N, H), 0.0), 120.0) * water * daylight;
-    color += highlight * vec3(1.0, 0.95, 0.85) * 0.45;
+    color += highlight * vec3(1.0, 0.95, 0.85) * 1.1;
 
     /* Clouds, on the top tier: a slow drift, lit like the ground, with a faint
        shadow underneath so they sit above it. */
@@ -126,12 +128,13 @@ export const GLOBE_FRAGMENT = /* glsl */ `
       float cover = smoothstep(0.56, 0.78, c) * 0.55;
       float shadow = smoothstep(0.56, 0.78, fbm(p + L * 0.05 + 0.35 * fbm(p * 1.7)));
       color *= 1.0 - shadow * 0.18 * daylight;
-      color = mix(color, (daylight * 0.92 + 0.02) * warm, cover);
+      color = mix(color, (daylight * 0.98 + 0.02) * warm, cover);
     }
 
     /* City lights where the sun is down. */
+    /* City lights, written above 1.0 on purpose: they are what blooms. */
     float nightW = 1.0 - smoothstep(-0.18, 0.06, NdotL);
-    color += night * nightW * 1.6;
+    color += night * nightW * 2.8;
 
     /* The coastline: the 0.5 isoline of the land mask, one to two pixels wide
        at any zoom, stronger on the night side where there is nothing else to
@@ -177,23 +180,25 @@ export const ATMOSPHERE_FRAGMENT = /* glsl */ `
 
   uniform vec3 uSunDir;
   uniform vec3 uCameraPos;
+  uniform float uRimPower;
+  uniform float uIntensity;
 
   varying vec3 vNormal;
   varying vec3 vWorldPos;
 
   const vec3 SKY = vec3(0.30, 0.55, 1.0);
-  const vec3 TWILIGHT = vec3(1.0, 0.45, 0.15);
+  const vec3 TWILIGHT = vec3(1.0, 0.42, 0.12);
 
   void main() {
     vec3 N = normalize(vNormal);
     vec3 V = normalize(uCameraPos - vWorldPos);
     vec3 L = normalize(uSunDir);
-    float rim = pow(1.0 - clamp(abs(dot(N, V)), 0.0, 1.0), 3.0);
+    float rim = pow(1.0 - clamp(abs(dot(N, V)), 0.0, 1.0), uRimPower);
     float facing = dot(N, L);
     float lit = smoothstep(-0.30, 0.35, facing);
     float twilight = exp(-pow(facing / 0.20, 2.0));
-    vec3 color = SKY * lit * 0.9 + TWILIGHT * twilight * 0.8;
-    float intensity = rim * (0.9 * lit + 0.6 * twilight);
+    vec3 color = SKY * lit * 0.9 + TWILIGHT * twilight * 0.9;
+    float intensity = rim * (0.9 * lit + 0.7 * twilight) * uIntensity;
     gl_FragColor = vec4(color * intensity, 1.0);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>

@@ -69,13 +69,26 @@ export function Globe({
     [],
   );
 
+  /* Two shells: a tight bright rim and a wide soft haze around it. */
   const initialShellUniforms = useMemo(
     () => ({
       uSunDir: { value: new Vector3(1, 0, 0) },
       uCameraPos: { value: new Vector3() },
+      uRimPower: { value: 3.0 },
+      uIntensity: { value: 1.0 },
     }),
     [],
   );
+  const initialHazeUniforms = useMemo(
+    () => ({
+      uSunDir: { value: new Vector3(1, 0, 0) },
+      uCameraPos: { value: new Vector3() },
+      uRimPower: { value: 1.6 },
+      uIntensity: { value: 0.28 },
+    }),
+    [],
+  );
+  const haze = useRef<ShaderMaterial>(null);
 
   useFrame((state) => {
     const { clock } = readScroll().score;
@@ -96,10 +109,12 @@ export function Globe({
         u.uClouds.value = tier === "a" && motion ? 1 : 0;
     }
 
-    const s = shell.current?.uniforms;
-    if (s !== undefined) {
-      (s.uSunDir?.value as Vector3).set(sx, sy, sz);
-      (s.uCameraPos?.value as Vector3).copy(state.camera.position);
+    for (const material of [shell.current, haze.current]) {
+      const s = material?.uniforms;
+      if (s !== undefined) {
+        (s.uSunDir?.value as Vector3).set(sx, sy, sz);
+        (s.uCameraPos?.value as Vector3).copy(state.camera.position);
+      }
     }
   });
 
@@ -121,6 +136,19 @@ export function Globe({
           vertexShader={ATMOSPHERE_VERTEX}
           fragmentShader={ATMOSPHERE_FRAGMENT}
           uniforms={initialShellUniforms}
+          side={BackSide}
+          transparent
+          depthWrite={false}
+          blending={AdditiveBlending}
+        />
+      </mesh>
+      <mesh renderOrder={3}>
+        <sphereGeometry args={[1.18, 64, 32]} />
+        <shaderMaterial
+          ref={haze}
+          vertexShader={ATMOSPHERE_VERTEX}
+          fragmentShader={ATMOSPHERE_FRAGMENT}
+          uniforms={initialHazeUniforms}
           side={BackSide}
           transparent
           depthWrite={false}

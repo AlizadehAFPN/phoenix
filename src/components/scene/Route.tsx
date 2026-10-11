@@ -175,8 +175,18 @@ const QUEUED_MARKS: readonly number[] = [0.03, 0.22, 0.48, 0.74, 0.97];
 export function Route({ day }: { readonly day: Day }) {
   const [lr, lg, lb] = hexToRgb(palette.primary[400]);
   const lineColor = useMemo(() => new Color(lr, lg, lb), [lr, lg, lb]);
+  /* Above 1.0 on purpose: the tail and the head are what bloom. */
+  const tailColor = useMemo(
+    () => new Color(lr, lg, lb).multiplyScalar(3.2),
+    [lr, lg, lb],
+  );
   const [nr, ng, nb] = hexToRgb(palette.primary[200]);
   const neutral = useMemo(() => new Color(nr, ng, nb), [nr, ng, nb]);
+  const [wr, wg, wb] = hexToRgb(palette.grey.white);
+  const coreColor = useMemo(
+    () => new Color(wr, wg, wb).multiplyScalar(2.4),
+    [wr, wg, wb],
+  );
 
   const legs = useMemo(
     () =>
@@ -192,6 +202,7 @@ export function Route({ day }: { readonly day: Day }) {
 
   const solidRefs = useRef<(Line2 | null)[]>([]);
   const queuedRefs = useRef<(Line2 | null)[]>([]);
+  const tailRefs = useRef<(Line2 | null)[]>([]);
   const head = useRef<Group>(null);
   const headGlow = useRef<Sprite>(null);
   const ring = useRef<Mesh>(null);
@@ -274,6 +285,17 @@ export function Route({ day }: { readonly day: Day }) {
       solid.material.dashSize = total * solidShare;
       solid.material.gapSize = total * 4 + 1;
       solid.visible = solidShare > 0.0005;
+
+      /* The comet: a short bright run ending at the drawing front, so the
+         line's growth — and the aircraft in flight — carries light. */
+      const tail = tailRefs.current[i];
+      if (tail !== null && tail !== undefined) {
+        const tailLength = Math.min(total * 0.12, total * solidShare);
+        tail.material.dashSize = tailLength;
+        tail.material.gapSize = total * 4 + 1;
+        tail.material.dashOffset = -(total * solidShare - tailLength);
+        tail.visible = solidShare > 0.002 && solidShare < 0.9995;
+      }
       if (queued !== null && queued !== undefined) {
         queued.material.dashSize = total * queuedShare;
         queued.material.gapSize = total * 4 + 1;
@@ -380,6 +402,21 @@ export function Route({ day }: { readonly day: Day }) {
           />
           <Line
             ref={(el) => {
+              tailRefs.current[i] = el as Line2 | null;
+            }}
+            points={leg.points}
+            color={tailColor}
+            lineWidth={LINE_WIDTH * 1.4}
+            dashed
+            dashSize={0}
+            gapSize={leg.length * 4 + 1}
+            transparent
+            opacity={1}
+            depthWrite={false}
+            renderOrder={3}
+          />
+          <Line
+            ref={(el) => {
               queuedRefs.current[i] = el as Line2 | null;
             }}
             points={leg.points}
@@ -447,14 +484,20 @@ export function Route({ day }: { readonly day: Day }) {
         <sprite ref={headGlow} scale={[0.014, 0.014, 1]} renderOrder={4}>
           <spriteMaterial
             map={glow}
+            color={tailColor}
             transparent
-            opacity={0.8}
+            opacity={0.9}
             depthWrite={false}
             blending={AdditiveBlending}
           />
         </sprite>
         <sprite scale={[0.004, 0.004, 1]} renderOrder={5}>
-          <spriteMaterial map={core} transparent depthWrite={false} />
+          <spriteMaterial
+            map={core}
+            color={coreColor}
+            transparent
+            depthWrite={false}
+          />
         </sprite>
       </group>
 

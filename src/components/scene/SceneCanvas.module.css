@@ -10,3 +10,30 @@
   width: 100% !important;
   height: 100% !important;
 }
+
+/* The opening: the frame lifts out of black as the camera glides in. */
+.frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--color-grey-dark);
+  pointer-events: none;
+  animation: veil var(--duration-fade) var(--ease-fade) 120ms both;
+}
+
+@keyframes veil {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame::after {
+    animation: none;
+    opacity: 0;
+  }
+}

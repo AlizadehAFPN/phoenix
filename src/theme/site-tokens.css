@@ -58,6 +58,11 @@
   --leading-body: 1.5;
   /* Tabular figures for every clock and every number. */
   --font-features-tabular: "tnum" 1, "cv01" 1;
+  /* Tracking for small capitals labels only; the app sets 0 everywhere, but
+     a 12px uppercase eyebrow over imagery needs air between its letters. */
+  --tracking-caps: 0.06em;
+  /* One soft shadow under words over imagery. */
+  --text-shadow-stage: 0 1px 2px var(--color-grey-dark-a50);
 
   /* ---- motion ---------------------------------------------------------- */
 

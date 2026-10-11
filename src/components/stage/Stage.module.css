@@ -16,6 +16,22 @@
   opacity: 0;
 }
 
+/* The scrim: the words' column darkened softly, edge to edge of the
+   viewport height, feathering into the planet. Light enough to keep the
+   night side's lights, dark enough for a desert at noon. */
+.stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    var(--color-grey-dark-a75) 0%,
+    var(--color-grey-dark-a50) 28%,
+    var(--color-grey-dark-a25) 44%,
+    transparent 60%
+  );
+}
+
 .block {
   position: absolute;
   left: var(--layout-gutter);
@@ -70,9 +86,10 @@
 .eyebrow {
   font-size: var(--text-xs-size);
   font-weight: var(--text-xs-bold-weight);
-  letter-spacing: 0;
+  letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
-  color: var(--color-primary-300);
+  color: var(--color-primary-200);
+  text-shadow: var(--text-shadow-stage);
   margin-bottom: var(--space-m);
 }
 
@@ -83,6 +100,7 @@
   letter-spacing: 0;
   text-wrap: balance;
   color: var(--stage-text);
+  text-shadow: var(--text-shadow-stage);
 }
 
 .hero .headline {
@@ -90,12 +108,36 @@
   font-weight: var(--font-weight-thin);
 }
 
+/* The opening: the hero's words arrive once the frame has lifted. */
+.hero .inner {
+  animation: arrive var(--duration-fade) var(--ease-wordmark) 1000ms both;
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(var(--rise));
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero .inner {
+    animation: none;
+  }
+}
+
 .lead {
   margin-top: var(--space-m);
   font-size: var(--text-lead-size);
   font-weight: var(--font-weight-regular);
   line-height: var(--leading-body);
-  color: var(--stage-secondary);
+  color: var(--stage-text);
+  text-shadow: var(--text-shadow-stage);
   text-wrap: pretty;
 }
 
@@ -139,6 +181,16 @@
 /* Phones: the words sit in the lower half, the planet's point of interest
    above them (the camera anchors to the upper third in portrait). */
 @media (max-width: 767px), (orientation: portrait) {
+  .stage::before {
+    background: linear-gradient(
+      to top,
+      var(--color-grey-dark-a75) 0%,
+      var(--color-grey-dark-a50) 35%,
+      var(--color-grey-dark-a25) 50%,
+      transparent 68%
+    );
+  }
+
   .block {
     top: auto;
     bottom: calc(var(--space-xl) + env(safe-area-inset-bottom));
