@@ -22,6 +22,7 @@ import {
   GLOBE_FRAGMENT,
   GLOBE_VERTEX,
 } from "./shaders/globe";
+import { useCloudMap } from "./useCloudMap";
 import { useGlobeTextures } from "./useGlobeTextures";
 
 /**
@@ -37,11 +38,15 @@ import { useGlobeTextures } from "./useGlobeTextures";
 export function Globe({
   tier,
   motion,
+  clouds = true,
 }: {
   readonly tier: Exclude<Tier, "none">;
   readonly motion: boolean;
+  readonly clouds?: boolean | undefined;
 }) {
   const textures = useGlobeTextures(tier);
+  const cloudsOn = clouds && tier === "a";
+  const cloudMap = useCloudMap(cloudsOn, motion);
   const surface = useRef<ShaderMaterial>(null);
   const shell = useRef<ShaderMaterial>(null);
 
@@ -59,8 +64,8 @@ export function Globe({
       uDetailMix: { value: 0 },
       uSunDir: { value: new Vector3(1, 0, 0) },
       uCameraPos: { value: new Vector3() },
-      uTime: { value: 0 },
-      uClouds: { value: tier === "a" && motion ? 1 : 0 },
+      uCloudMap: { value: textures.night },
+      uClouds: { value: 0 },
       uCoastColor: { value: coast },
       uCoastAlpha: { value: 0.38 },
     }),
@@ -98,7 +103,8 @@ export function Globe({
     if (u !== undefined) {
       (u.uSunDir?.value as Vector3).set(sx, sy, sz);
       (u.uCameraPos?.value as Vector3).copy(state.camera.position);
-      if (u.uTime !== undefined) u.uTime.value = state.clock.elapsedTime;
+      if (u.uCloudMap !== undefined && cloudMap !== null)
+        u.uCloudMap.value = cloudMap;
       if (u.uDay !== undefined) u.uDay.value = textures.day;
       if (u.uNight !== undefined) u.uNight.value = textures.night;
       if (u.uDetailDay !== undefined) u.uDetailDay.value = textures.detailDay;
@@ -106,7 +112,7 @@ export function Globe({
         u.uDetailNight.value = textures.detailNight;
       if (u.uDetailMix !== undefined) u.uDetailMix.value = textures.detailMix;
       if (u.uClouds !== undefined)
-        u.uClouds.value = tier === "a" && motion ? 1 : 0;
+        u.uClouds.value = cloudsOn && cloudMap !== null ? 1 : 0;
     }
 
     for (const material of [shell.current, haze.current]) {

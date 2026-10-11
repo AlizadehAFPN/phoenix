@@ -37,9 +37,13 @@ import { Stars } from "./Stars";
 export function Scene({
   tier,
   motion,
+  post = true,
+  clouds = true,
 }: {
   readonly tier: Exclude<Tier, "none">;
   readonly motion: boolean;
+  readonly post?: boolean | undefined;
+  readonly clouds?: boolean | undefined;
 }) {
   const invalidate = useThree((s) => s.invalidate);
 
@@ -65,20 +69,17 @@ export function Scene({
     <>
       <CameraRig motion={motion} />
       <Stars />
-      <Globe tier={tier} motion={motion} />
+      <Globe tier={tier} motion={motion} clouds={clouds} />
       <Route day={THEME.day} />
-      {tier !== "c" ? (
-        <EffectComposer
-          multisampling={tier === "a" ? 4 : 0}
-          enableNormalPass={false}
-        >
+      {post && tier !== "c" ? (
+        <EffectComposer multisampling={0} enableNormalPass={false}>
           <Bloom
             luminanceThreshold={1}
             luminanceSmoothing={0.35}
             intensity={1.15}
             mipmapBlur
             radius={0.72}
-            levels={7}
+            levels={5}
           />
           <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
           <Vignette eskil={false} offset={0.22} darkness={0.55} />

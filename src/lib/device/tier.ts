@@ -66,11 +66,16 @@ export const TIER_TEXTURE_WIDTH: Readonly<
   c: 2048,
 };
 
-/** Device pixel ratio cap per tier. */
+/**
+ * Device pixel ratio cap per tier. The scene renders at most 1.5× even on a
+ * 2× display: the post pipeline's cost is per pixel, 1.5× keeps the top tier
+ * at 60 fps on an M1 where 2× does not, and the bloom and the grain make the
+ * difference invisible.
+ */
 export const TIER_DPR_CAP: Readonly<Record<Exclude<Tier, "none">, number>> = {
-  a: 2,
-  b: 2,
-  c: 1.5,
+  a: 1.5,
+  b: 1.5,
+  c: 1,
 };
 
 /** Reads the inputs from the browser. Call on the client only. */

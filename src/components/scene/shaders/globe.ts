@@ -42,7 +42,7 @@ export const GLOBE_FRAGMENT = /* glsl */ `
   uniform float uDetailMix;
   uniform vec3 uSunDir;
   uniform vec3 uCameraPos;
-  uniform float uTime;
+  uniform sampler2D uCloudMap;
   uniform float uClouds;
   uniform vec3 uCoastColor;
   uniform float uCoastAlpha;
@@ -54,37 +54,6 @@ export const GLOBE_FRAGMENT = /* glsl */ `
   /* Rayleigh sky and twilight, see the module comment. */
   const vec3 SKY = vec3(0.30, 0.55, 1.0);
   const vec3 TWILIGHT = vec3(1.0, 0.42, 0.12);
-
-  /* Value noise on the sphere for the clouds: cheap, tileable by construction
-     because it is sampled by position rather than by UV. */
-  float hash(vec3 p) {
-    p = fract(p * 0.3183099 + vec3(0.1, 0.2, 0.3));
-    p *= 17.0;
-    return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
-  }
-
-  float noise(vec3 x) {
-    vec3 i = floor(x);
-    vec3 f = fract(x);
-    f = f * f * (3.0 - 2.0 * f);
-    return mix(
-      mix(mix(hash(i + vec3(0, 0, 0)), hash(i + vec3(1, 0, 0)), f.x),
-          mix(hash(i + vec3(0, 1, 0)), hash(i + vec3(1, 1, 0)), f.x), f.y),
-      mix(mix(hash(i + vec3(0, 0, 1)), hash(i + vec3(1, 0, 1)), f.x),
-          mix(hash(i + vec3(0, 1, 1)), hash(i + vec3(1, 1, 1)), f.x), f.y),
-      f.z);
-  }
-
-  float fbm(vec3 p) {
-    float v = 0.0;
-    float a = 0.5;
-    for (int i = 0; i < 5; i++) {
-      v += a * noise(p);
-      p = p * 2.03 + vec3(1.7, 9.2, 4.1);
-      a *= 0.5;
-    }
-    return v;
-  }
 
   void main() {
     vec3 N = normalize(vNormal);
@@ -120,13 +89,13 @@ export const GLOBE_FRAGMENT = /* glsl */ `
     float highlight = pow(max(dot(N, H), 0.0), 120.0) * water * daylight;
     color += highlight * vec3(1.0, 0.95, 0.85) * 1.1;
 
-    /* Clouds, on the top tier: a slow drift, lit like the ground, with a faint
-       shadow underneath so they sit above it. */
+    /* Clouds, on the top tier, from the baked map (shaders/clouds.ts): lit
+       like the ground, with a faint shadow a little up-sun of each cloud so
+       they sit above it. */
     if (uClouds > 0.5) {
-      vec3 p = N * 16.0 + vec3(uTime * 0.004, 0.0, uTime * 0.003);
-      float c = fbm(p + 0.35 * fbm(p * 1.7));
-      float cover = smoothstep(0.56, 0.78, c) * 0.55;
-      float shadow = smoothstep(0.56, 0.78, fbm(p + L * 0.05 + 0.35 * fbm(p * 1.7)));
+      float cover = texture2D(uCloudMap, vUv).r * 0.55;
+      vec2 sunUv = vec2(L.x, L.y) * 0.004;
+      float shadow = texture2D(uCloudMap, vUv - sunUv).r;
       color *= 1.0 - shadow * 0.18 * daylight;
       color = mix(color, (daylight * 0.98 + 0.02) * warm, cover);
     }

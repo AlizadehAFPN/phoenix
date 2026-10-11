@@ -4,6 +4,7 @@ import { Canvas } from "@react-three/fiber";
 import { useSyncExternalStore } from "react";
 import { Color, NoToneMapping } from "three";
 
+import { sceneFlags } from "@/lib/device/flags";
 import {
   chooseTier,
   probeDevice,
@@ -30,7 +31,9 @@ import { SceneLabels } from "./SceneLabels";
 let probedTier: Tier | null = null;
 
 function readTier(): Tier {
-  if (probedTier === null) probedTier = chooseTier(probeDevice());
+  if (probedTier === null) {
+    probedTier = sceneFlags().tier ?? chooseTier(probeDevice());
+  }
   return probedTier;
 }
 
@@ -67,6 +70,7 @@ export function SceneCanvas() {
   );
 
   const [r, g, b] = hexToRgb(palette.grey.dark);
+  const flags = sceneFlags();
 
   return (
     <div
@@ -77,7 +81,7 @@ export function SceneCanvas() {
       {tier !== null && tier !== "none" ? (
         <Canvas
           frameloop="demand"
-          dpr={[1, TIER_DPR_CAP[tier]]}
+          dpr={[1, flags.dpr ?? TIER_DPR_CAP[tier]]}
           gl={{
             antialias: true,
             alpha: false,
@@ -90,7 +94,12 @@ export function SceneCanvas() {
             gl.setClearColor(new Color(r, g, b), 1);
           }}
         >
-          <Scene tier={tier} motion={motion} />
+          <Scene
+            tier={tier}
+            motion={motion}
+            post={flags.post}
+            clouds={flags.clouds}
+          />
         </Canvas>
       ) : null}
       {tier !== null && tier !== "none" ? (
