@@ -13,13 +13,18 @@
  * page whose first contentful paint is the whole job, static wins. Everything
  * else is as tight as the page allows:
  *
- * - `'wasm-unsafe-eval'` is for the Basis Universal transcoder, which decodes
- *   the KTX2 globe textures in WebAssembly. It permits WebAssembly only, not
- *   JavaScript `eval`.
- * - `worker-src blob:` is for three's KTX2Loader, which runs the transcoder in
- *   a worker built from a blob URL.
+ * - `'wasm-unsafe-eval'` and `'unsafe-eval'` are for the Basis Universal
+ *   transcoder, which decodes the KTX2 globe textures. It is compiled with
+ *   Emscripten's embind, which builds its function invokers from strings
+ *   with the `Function` constructor; the transcoder runs in a worker built
+ *   from a `blob:` URL, and a blob worker inherits THIS policy. Without
+ *   `'unsafe-eval'` every texture fails to decode and the planet renders
+ *   black (seen on the first production deploy, 2026-10-11). The cost is
+ *   small here: the page already has to allow `'unsafe-inline'` for Next's
+ *   static bootstrap, which is the larger opening of the two, and the page
+ *   renders no user content.
+ * - `worker-src blob:` is for the same worker.
  * - `challenges.cloudflare.com` is Turnstile, the only third party on the page.
- * - `'unsafe-eval'` is added in development only, for React Refresh.
  */
 
 const TURNSTILE = "https://challenges.cloudflare.com";
@@ -28,9 +33,9 @@ export function contentSecurityPolicy(development: boolean): string {
   const scriptSrc = [
     "'self'",
     "'unsafe-inline'",
+    "'unsafe-eval'",
     "'wasm-unsafe-eval'",
     TURNSTILE,
-    ...(development ? ["'unsafe-eval'"] : []),
   ];
 
   return [

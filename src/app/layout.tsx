@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   /* The scene is space in both modes, so the browser chrome is too. */
   themeColor: palette.grey.dark,
-  colorScheme: "dark light",
+  colorScheme: "dark",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -40,7 +40,10 @@ export default function RootLayout({
   readonly children: ReactNode;
 }) {
   return (
-    <html lang="en" className={GeistSans.variable}>
+    /* Dark, always: every word on the page sits over the planet in space,
+       so the mode-aware tokens resolve to their dark values whatever the
+       system's appearance is. */
+    <html lang="en" className={GeistSans.variable} data-theme="dark">
       <body>{children}</body>
     </html>
   );
