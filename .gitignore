@@ -1,0 +1,34 @@
+# dependencies
+node_modules/
+
+# next.js
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# vercel — the linked-project metadata and any `vercel env pull` output
+.vercel/
+
+# EVERY env file, not only the `.local` ones. Next reads `.env`, `.env.local`,
+# `.env.development` and `.env.production`, and every `NEXT_PUBLIC_` value in
+# any of them is inlined into the client bundle in plain text. Only
+# `.env.example`, which carries keys with no values, stays tracked.
+.env
+.env.*
+!.env.example
+
+# internal planning: legal analysis and internal hostnames (BRIEF §0)
+docs/planning/
+
+# raw source imagery (NASA, Natural Earth) lives outside git; only the
+# processed KTX2 files under public/textures are tracked
+assets-src/
+
+# tooling output
+.playwright-mcp/
+coverage/
+*.log
+
+# macOS
+.DS_Store

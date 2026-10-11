@@ -1,0 +1,13 @@
+# Deny everything, then admit only what the runtime image copies.
+*
+!.next/standalone
+!.next/static
+!public
+
+# Never an env file, wherever Next may have copied one. Secrets are passed at
+# `docker run`.
+**/.env
+**/.env.*
+
+# Never the repository itself.
+.git

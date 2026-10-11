@@ -1,0 +1,46 @@
+.panel {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: var(--color-surface-card);
+  border: var(--panel-edge);
+  box-shadow: var(--shadow-glass-panel);
+  /* A frameless screen has the screen's own corners: none. */
+  border-radius: 0;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+
+.panel[data-device="iphone"] {
+  max-width: calc(var(--text-base-size) * 20);
+  margin-inline: auto;
+}
+
+.image {
+  width: 100%;
+  height: auto;
+}
+
+.empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background:
+    linear-gradient(var(--color-glass-glassier), var(--color-glass-glassier)),
+    repeating-linear-gradient(
+      -45deg,
+      var(--color-surface-hatch) 0 var(--space-xs),
+      transparent var(--space-xs) var(--space-sm)
+    );
+}
+
+.label {
+  font-size: var(--text-xs-size);
+  font-weight: var(--text-xs-weight);
+  color: var(--color-text-secondary);
+  background: var(--color-glass-default);
+  border: var(--border-width) solid var(--color-border-default);
+  border-radius: var(--radius-s);
+  padding: var(--space-xs) var(--space-s);
+}

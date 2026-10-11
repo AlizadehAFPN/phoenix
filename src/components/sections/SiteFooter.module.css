@@ -1,0 +1,25 @@
+.footer {
+  position: relative;
+  z-index: var(--z-content);
+  padding-block: var(--space-xxl) var(--space-xl);
+}
+
+.inner {
+  display: grid;
+  row-gap: var(--space-s);
+  border-top: var(--border-width) solid var(--color-border-default);
+  padding-top: var(--space-l);
+}
+
+.legal {
+  font-size: var(--text-xs-size);
+  font-weight: var(--text-xs-weight);
+  color: var(--color-text-primary);
+}
+
+.line {
+  font-size: var(--text-xxs-size);
+  font-weight: var(--text-xxs-regular-weight);
+  color: var(--color-text-secondary);
+  max-width: var(--layout-measure);
+}

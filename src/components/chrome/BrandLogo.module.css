@@ -1,0 +1,14 @@
+.brand {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  text-decoration: none;
+  color: var(--color-text-primary);
+}
+
+.wordmark {
+  font-size: var(--text-wordmark-size);
+  font-weight: var(--font-weight-thin);
+  letter-spacing: 0;
+  line-height: 1;
+}

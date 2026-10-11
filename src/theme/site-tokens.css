@@ -1,0 +1,110 @@
+/*
+ * Site-only tokens — values the app has no counterpart for.
+ *
+ * BRIEF §2.6: a missing value is added to the token layer first and consumed
+ * from there, never inlined at a call site. The app's own tokens are in
+ * `tokens.generated.css` (do not edit); this file holds what a scrolling web
+ * page needs on top of them, each with the app value it is derived from.
+ *
+ * The app scales every measurement from a 1194pt design frame to the device.
+ * The web has no such frame, so sizes here are fluid: the app's token is the
+ * floor, and the ceiling is the same token at the proportion a large display
+ * asks for.
+ */
+
+:root {
+  /* ---- layout --------------------------------------------------------- */
+
+  /* The page gutter: space-m on a phone (the app's own card inset), space-xl
+     from tablet width up. */
+  --layout-gutter: var(--space-m);
+  /* A reading measure for body copy: 36 × the base type size. */
+  --layout-measure: calc(var(--text-base-size) * 36);
+  /* The widest the content ever goes: 80 × the base type size. */
+  --layout-max: calc(var(--text-base-size) * 80);
+  /* The header's height: base type size plus space-l above and below. */
+  --layout-header: calc(var(--text-base-size) + 2 * var(--space-l));
+
+  /* ---- type ------------------------------------------------------------ */
+
+  /* The wordmark: the app's `display` (Geist Thin 100pt) at the proportion
+     a header allows, never above the app's own size. */
+  --text-wordmark-size: clamp(
+    var(--text-xl-size),
+    1.6vw + var(--text-xs-size),
+    var(--text-xxl-size)
+  );
+  /* The hero headline: between the app's largest subtitle and 2.4 × it. */
+  --text-hero-size: clamp(
+    var(--text-xxxl-size),
+    2.2vw + var(--text-xxl-size),
+    calc(var(--text-xxxl-size) * 2.4)
+  );
+  /* A beat's headline: between xxl and 1.8 × xxxl. */
+  --text-headline-size: clamp(
+    var(--text-xxl-size),
+    1.4vw + var(--text-lg-size),
+    calc(var(--text-xxxl-size) * 1.8)
+  );
+  /* Lead copy: base to xl. */
+  --text-lead-size: clamp(
+    var(--text-base-size),
+    0.4vw + var(--text-sm-size),
+    var(--text-xl-size)
+  );
+  /* Headline and lead leading. The app sets none (Geist's own line box);
+     long measures on the web need a little more. */
+  --leading-tight: 1.05;
+  --leading-body: 1.5;
+  /* Tabular figures for every clock and every number. */
+  --font-features-tabular: "tnum" 1, "cv01" 1;
+
+  /* ---- motion ---------------------------------------------------------- */
+
+  /* The app's splash curves (src/lib/motion/easing.ts), for CSS transitions. */
+  --ease-climb: cubic-bezier(0.32, 0.02, 0.14, 1);
+  --ease-fade: cubic-bezier(0.215, 0.61, 0.355, 1);
+  --ease-drift: cubic-bezier(0.2, 0.4, 0.2, 1);
+  --ease-wordmark: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-retire: cubic-bezier(0.645, 0.045, 0.355, 1);
+  --duration-fade: 900ms;
+  --duration-wordmark: 700ms;
+  --duration-retire: 700ms;
+  --duration-handoff: 350ms;
+  /* How far text rises into place: the wordmark's 14pt. */
+  --rise: 14px;
+
+  /* ---- glass ----------------------------------------------------------- */
+
+  /* The frameless screen panel's edge: the login card's own edge stroke. */
+  --panel-edge: var(--border-width) solid var(--color-grey-white-a7);
+  /* The copy card's glass. Dark mode can afford the glassier step over the
+     planet (white text, heavy blur); light mode needs the login card's own
+     75% glass for its dark text. The blur is the app's full-surface step. */
+  --card-glass: var(--color-glass-glassier);
+  --card-blur: var(--blur-background);
+
+  /* ---- layers ---------------------------------------------------------- */
+
+  --z-scene: 0;
+  --z-content: 1;
+  --z-chrome: 2;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --layout-gutter: var(--space-xl);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --card-glass: var(--color-glass-default);
+    --card-blur: var(--blur-card-glass);
+  }
+}
+
+:root[data-theme="light"] {
+  --card-glass: var(--color-glass-default);
+  --card-blur: var(--blur-card-glass);
+}

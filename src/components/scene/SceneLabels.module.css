@@ -1,0 +1,76 @@
+.layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.code,
+.label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+  opacity: 0;
+  transition: opacity var(--duration-handoff) var(--ease-fade);
+}
+
+.code[data-visible="true"],
+.label[data-visible="true"] {
+  opacity: 1;
+}
+
+.code {
+  /* Just above the dot, centred on it. */
+  margin: calc(-1 * var(--space-m) - var(--text-xxs-size)) 0 0
+    calc(-1 * var(--text-xxs-size));
+  font-size: var(--text-xxs-size);
+  font-weight: var(--text-xxs-bold-weight);
+  letter-spacing: 0;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.label {
+  display: grid;
+  justify-items: start;
+  row-gap: var(--space-xxs);
+  padding: var(--space-xs) var(--space-s);
+  background: var(--color-glass-default);
+  border: var(--panel-edge);
+  border-radius: var(--radius-s);
+  box-shadow: var(--shadow-chip);
+  white-space: nowrap;
+}
+
+/* The two gate labels and the two arrival labels would sit on one point
+   each; they fan out instead: off-block up-left, take-off up-right,
+   landing down-left, on-blocks down-right. */
+.label[data-slot="0"] {
+  margin: calc(-1 * var(--space-xxl) - var(--space-m)) 0 0
+    calc(-1 * var(--space-xxl) * 2);
+}
+
+.label[data-slot="1"] {
+  margin: calc(-1 * var(--space-xxl) - var(--space-m)) 0 0 var(--space-m);
+}
+
+.label[data-slot="2"] {
+  margin: var(--space-m) 0 0 calc(-1 * var(--space-xxl) * 2);
+}
+
+.label[data-slot="3"] {
+  margin: var(--space-m) 0 0 var(--space-m);
+}
+
+.labelEvent {
+  font-size: var(--text-xxs-size);
+  font-weight: var(--text-xxs-bold-weight);
+  color: var(--color-text-secondary);
+}
+
+.labelTime {
+  font-size: var(--text-xs-size);
+  font-weight: var(--text-xs-bold-weight);
+  color: var(--color-primary-400);
+}

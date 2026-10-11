@@ -1,0 +1,29 @@
+# gitleaks configuration for the post-build artefact scan
+# (scripts/scan-build-artifacts.mjs) and for scanning the repository itself.
+#
+# The default rule set is extended, not replaced, so every built-in detector
+# still applies. The additions cover the two services this site talks to.
+
+title = "phoenix-site"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "resend-api-key"
+description = "Resend API key"
+regex = '''\bre_[A-Za-z0-9_]{16,}\b'''
+keywords = ["re_"]
+
+[[rules]]
+id = "phoenix-server-secret-assignment"
+description = "A server secret name assigned a value inside a shipped file"
+regex = '''(?i)(RESEND_API_KEY|TURNSTILE_SECRET_KEY)\s*[:=]\s*["']?[A-Za-z0-9_\-]{12,}'''
+keywords = ["RESEND_API_KEY", "TURNSTILE_SECRET_KEY"]
+
+[allowlist]
+description = "Files that are never a shipped artefact"
+paths = [
+  '''node_modules''',
+  '''\.next/cache''',
+]

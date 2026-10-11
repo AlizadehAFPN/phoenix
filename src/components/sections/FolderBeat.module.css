@@ -1,0 +1,57 @@
+.stage {
+  --arrival: 0;
+}
+
+/* The pages: thin sheets that travel in from above and to the right and
+   settle onto the folder, one after another, with the climb curve. The
+   stage's --arrival (0..1) is split into four overlapping windows. */
+.pages {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.page {
+  --window: clamp(0, calc((var(--arrival) - var(--i) * 0.18) / 0.4), 1);
+  position: absolute;
+  top: calc(var(--space-xl) + var(--i) * var(--space-sm));
+  right: calc(var(--space-xl) + var(--i) * var(--space-sm));
+  width: 28%;
+  aspect-ratio: 1 / 1.3;
+  display: grid;
+  align-content: end;
+  padding: var(--space-sm);
+  font-size: var(--text-xxs-size);
+  font-weight: var(--text-xxs-bold-weight);
+  color: var(--color-text-secondary);
+  background: var(--color-glass-default);
+  border: var(--panel-edge);
+  box-shadow: var(--shadow-nested-card);
+  opacity: var(--window);
+  transform: translate(
+      calc((1 - var(--window)) * 40%),
+      calc((1 - var(--window)) * -60%)
+    )
+    rotateY(calc(-1 * var(--yaw, 6deg)));
+}
+
+/* The signal indicator: a small ring that is lit until the stage goes
+   offline, then dims. It sits at the folder's top-left corner. */
+.signal {
+  position: absolute;
+  top: var(--space-m);
+  left: var(--space-m);
+  width: var(--space-s);
+  height: var(--space-s);
+  border-radius: 50%;
+  background: var(--color-success-400);
+  box-shadow: 0 0 0 var(--space-xs) var(--color-success-a20);
+  transition:
+    background var(--duration-handoff) var(--ease-fade),
+    box-shadow var(--duration-handoff) var(--ease-fade);
+}
+
+[data-offline="true"] .signal {
+  background: var(--color-text-unit);
+  box-shadow: 0 0 0 var(--space-xs) var(--color-grey-dark-a25);
+}

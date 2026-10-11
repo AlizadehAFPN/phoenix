@@ -1,0 +1,22 @@
+.stage {
+  --wipe: 0;
+}
+
+/* The wipe: the screen's content is clipped away from the left with the
+   retire curve, leaving the glass — the panel's own surface — behind. */
+.wiped {
+  clip-path: inset(0 0 0 calc(var(--wipe) * 100%));
+}
+
+[data-state="second"] .wiped {
+  opacity: 0;
+  transition: opacity var(--duration-handoff) var(--ease-fade);
+}
+
+.glass {
+  aspect-ratio: 2752 / 2064;
+  background: var(--color-glass-glassier);
+  -webkit-backdrop-filter: blur(var(--blur-card-glass));
+  backdrop-filter: blur(var(--blur-card-glass));
+  border: var(--panel-edge);
+}

@@ -1,0 +1,136 @@
+.demo {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-xl);
+  align-items: start;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-m);
+  padding: var(--space-l);
+  background: var(--card-glass);
+  -webkit-backdrop-filter: blur(var(--card-blur));
+  backdrop-filter: blur(var(--card-blur));
+  border: var(--panel-edge);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-glass-panel);
+}
+
+.field {
+  display: grid;
+  row-gap: var(--space-xs);
+}
+
+.label {
+  font-size: var(--text-xs-size);
+  font-weight: var(--text-xs-bold-weight);
+  color: var(--color-text-secondary);
+}
+
+.input {
+  width: 100%;
+  /* The base size, never smaller: an input under 16px makes Safari zoom. */
+  font-size: var(--text-base-size);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--leading-body);
+  color: var(--color-text-primary);
+  background: var(--color-surface-placeholder);
+  border: var(--border-width) solid var(--color-border-textbox);
+  border-radius: var(--radius-m);
+  padding: var(--space-sm) var(--space-m);
+  box-shadow: var(--shadow-input-focus-glow);
+  outline: none;
+  transition:
+    border-color var(--duration-handoff) var(--ease-fade),
+    box-shadow var(--duration-handoff) var(--ease-fade);
+}
+
+.input::placeholder {
+  color: var(--color-text-unit);
+}
+
+.input:focus-visible {
+  border-color: var(--color-primary-400);
+  box-shadow: var(--shadow-input-focus-glow);
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--color-error-400);
+}
+
+.error {
+  font-size: var(--text-xxs-size);
+  font-weight: var(--text-xxs-bold-weight);
+  color: var(--color-error-400);
+}
+
+.honeypot {
+  position: absolute;
+  left: -200vw;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.actions {
+  display: grid;
+  gap: var(--space-sm);
+  margin-top: var(--space-s);
+}
+
+.submit {
+  justify-self: start;
+  font-size: var(--text-base-size);
+  font-weight: var(--text-base-weight);
+  line-height: 1;
+  color: var(--color-grey-white);
+  background: var(--color-primary-400);
+  border: 0;
+  border-radius: var(--radius-m);
+  padding: var(--space-m) var(--space-l);
+  box-shadow: var(--inner-highlight-chat);
+  cursor: pointer;
+  transition: background var(--duration-handoff) var(--ease-fade);
+}
+
+.submit:hover {
+  background: var(--color-primary-300);
+}
+
+.submit:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: default;
+}
+
+.privacy,
+.status {
+  font-size: var(--text-xs-size);
+  font-weight: var(--text-xs-weight);
+  color: var(--color-text-secondary);
+}
+
+.status:empty {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .form {
+    grid-template-columns: 1fr 1fr;
+    padding: var(--space-xl);
+  }
+
+  .field:nth-last-child(n + 1):has(textarea),
+  .actions,
+  .status {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 1024px) {
+  .demo {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: var(--space-xxl);
+  }
+}

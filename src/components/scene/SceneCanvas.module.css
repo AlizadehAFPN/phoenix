@@ -1,0 +1,12 @@
+.frame {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-scene);
+  background: var(--color-grey-dark);
+  pointer-events: none;
+}
+
+.frame canvas {
+  width: 100% !important;
+  height: 100% !important;
+}

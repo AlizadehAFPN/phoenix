@@ -1,0 +1,7 @@
+{
+  "comment": "The region the day's close camera views cover (STORYBOARD §4), as a lon/lat box. scripts/textures/build.mjs cuts the detail tiles from the NASA sources at their native resolution for exactly this box, and the globe shader blends them over the 4K base map inside it. A white-label variant with a different day sets its own box and re-runs the pipeline.",
+  "lonMin": 5,
+  "lonMax": 65,
+  "latMin": 10,
+  "latMax": 60
+}

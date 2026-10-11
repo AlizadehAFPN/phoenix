@@ -1,0 +1,10 @@
+node_modules/
+.next/
+out/
+.vercel/
+coverage/
+public/
+docs/planning/
+package-lock.json
+src/theme/tokens.generated.css
+src/theme/tokens.generated.ts

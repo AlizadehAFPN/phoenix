@@ -1,0 +1,65 @@
+.stage {
+  --fill: 0;
+}
+
+.events {
+  display: grid;
+  row-gap: var(--space-s);
+}
+
+.event {
+  --fill: 0;
+  display: flex;
+  align-items: center;
+  column-gap: var(--space-sm);
+  font-size: var(--text-sm-size);
+  font-weight: var(--text-sm-weight);
+  color: var(--color-text-unit);
+  transition: color var(--duration-handoff) var(--ease-fade);
+}
+
+.event[data-state="done"] {
+  color: var(--color-text-primary);
+}
+
+.event[data-state="current"] {
+  color: var(--color-primary-400);
+}
+
+/* The hold-to-confirm ring as the app draws it: a thin ring that fills
+   clockwise. A conic gradient under a mask, so the fill is one property. */
+.ring {
+  width: var(--space-m);
+  height: var(--space-m);
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--color-primary-400) calc(var(--fill) * 360deg),
+    var(--color-border-default) 0
+  );
+  -webkit-mask: radial-gradient(circle, transparent 55%, black 56%);
+  mask: radial-gradient(circle, transparent 55%, black 56%);
+}
+
+.event[data-state="done"] .ring {
+  background: var(--color-primary-400);
+}
+
+.panel {
+  --yaw: 6deg;
+  transform: rotateY(calc(-1 * var(--yaw))) rotateX(var(--pitch, 2deg))
+    translateY(var(--rise));
+  opacity: 0;
+  transition:
+    opacity var(--duration-wordmark) var(--ease-fade),
+    transform var(--duration-wordmark) var(--ease-wordmark);
+}
+
+.stage[data-event="offBlock"] .panel:nth-child(1),
+.stage[data-event="takeOff"] .panel:nth-child(2),
+.stage[data-event="landing"] .panel:nth-child(3),
+.stage[data-event="onBlocks"] .panel:nth-child(4),
+.stage[data-event="submit"] .panel:nth-child(5) {
+  opacity: 1;
+  transform: rotateY(calc(-1 * var(--yaw))) rotateX(var(--pitch, 2deg))
+    translateY(0);
+}

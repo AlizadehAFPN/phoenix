@@ -1,0 +1,6 @@
+.clock {
+  font-size: var(--text-base-size);
+  font-weight: var(--font-weight-regular);
+  line-height: 1;
+  color: var(--color-text-primary);
+}

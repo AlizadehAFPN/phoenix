@@ -1,0 +1,36 @@
+#!/bin/sh
+#
+# Rejects any commit message that attributes the work to someone other than the
+# developer of record.
+#
+# This is a contractual requirement, not a style preference: the product is
+# delivered under an exclusivity clause, and an attribution trailer in the git
+# history would contradict it. Tooling appends these trailers automatically, so
+# the guarantee is enforced by the repository rather than left to memory.
+#
+# Enable with:
+#
+#   git config core.hooksPath .githooks
+#
+# (`npm run prepare` does this for you.)
+
+msg_file="$1"
+
+# Case-insensitive. Covers co-author trailers and the "generated with/by"
+# phrasings that automated tooling tends to append.
+forbidden='co-authored-by:|generated[[:space:]]+(with|by)[[:space:]]|🤖'
+
+if grep -qiE "$forbidden" "$msg_file"; then
+  echo >&2
+  echo >&2 "  COMMIT REJECTED — the message carries an attribution trailer."
+  echo >&2
+  echo >&2 "  Offending line(s):"
+  grep -inE "$forbidden" "$msg_file" | sed >&2 's/^/    /'
+  echo >&2
+  echo >&2 "  This repository records a single developer of record."
+  echo >&2 "  Remove the trailer and commit again."
+  echo >&2
+  exit 1
+fi
+
+exit 0
