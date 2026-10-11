@@ -18,7 +18,9 @@ keywords = ["re_"]
 [[rules]]
 id = "phoenix-server-secret-assignment"
 description = "A server secret name assigned a value inside a shipped file"
-regex = '''(?i)(RESEND_API_KEY|TURNSTILE_SECRET_KEY)\s*[:=]\s*["']?[A-Za-z0-9_\-]{12,}'''
+# Spaces and tabs only around the `=`: `\s` would match the newline and read
+# the NEXT key's name as this key's value, as it did for `.env.example`.
+regex = '''(?i)(RESEND_API_KEY|TURNSTILE_SECRET_KEY)[ \t]*[:=][ \t]*["']?[A-Za-z0-9_\-]{12,}'''
 keywords = ["RESEND_API_KEY", "TURNSTILE_SECRET_KEY"]
 
 [allowlist]
